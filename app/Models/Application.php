@@ -9,6 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['job_id', 'user_id', 'cover_letter', 'resume_path', 'status'])]
 class Application extends Model
 {
+    protected function casts(): array
+    {
+        return [
+            'status' => 'string',
+        ];
+    }
+
     /**
      * The job listing this application was submitted for.
      */

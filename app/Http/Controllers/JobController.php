@@ -26,7 +26,7 @@ class JobController extends Controller
                 ->with('info', 'Please create a company profile before managing jobs.');
         }
 
-        $jobs = $company->jobs()->latest()->get();
+        $jobs = $company->jobs()->withCount('applications')->latest()->get();
 
         return view('employer.jobs.index', compact('jobs', 'company'));
     }

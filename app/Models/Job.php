@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -38,6 +39,54 @@ class Job extends Model
             'is_remote' => 'boolean',
             'expires_at' => 'datetime',
         ];
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', 'active')
+            ->where(function (Builder $q) {
+                $q->whereNull('expires_at')->orWhere('expires_at', '>=', now());
+            });
+    }
+
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        if (! $term) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) use ($term) {
+            $q->where('title', 'like', "%{$term}%")
+                ->orWhere('description', 'like', "%{$term}%");
+        });
+    }
+
+    public function scopeFilterType(Builder $query, array $types): Builder
+    {
+        if (empty($types)) {
+            return $query;
+        }
+
+        return $query->whereIn('type', $types);
+    }
+
+    public function scopeRemote(Builder $query): Builder
+    {
+        return $query->where('is_remote', true);
+    }
+
+    public function scopeStatus(Builder $query, ?string $status): Builder
+    {
+        if (! $status) {
+            return $query;
+        }
+
+        return $query->where('status', $status);
     }
 
     /**

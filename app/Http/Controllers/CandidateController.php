@@ -7,21 +7,13 @@ use Illuminate\View\View;
 
 class CandidateController extends Controller
 {
-    /**
-     * Display the candidate dashboard.
-     */
     public function dashboard(): View
     {
-        return view('candidate.dashboard', ['user' => Auth::user()]);
-    }
+        $user = Auth::user();
+        $profile = $user->candidateProfile;
+        $applicationCount = $user->applications()->count();
+        $recentApplications = $user->applications()->with('job.company')->latest()->take(5)->get();
 
-    /**
-     * Display the candidate's job applications.
-     */
-    public function applications(): View
-    {
-        $applications = Auth::user()->applications()->with('job')->get();
-
-        return view('candidate.applications', ['applications' => $applications]);
+        return view('candidate.dashboard', compact('user', 'profile', 'applicationCount', 'recentApplications'));
     }
 }

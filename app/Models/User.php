@@ -6,8 +6,10 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -28,7 +30,44 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'suspended_at' => 'datetime',
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->suspended_at !== null;
+    }
+
+    public function scopeRole(Builder $query, ?string $role): Builder
+    {
+        if (! $role) {
+            return $query;
+        }
+
+        return $query->where('role', $role);
+    }
+
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        if (! $term) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) use ($term) {
+            $q->where('name', 'like', "%{$term}%")
+                ->orWhere('email', 'like', "%{$term}%");
+        });
+    }
+
+    public function candidateProfile(): HasOne
+    {
+        return $this->hasOne(CandidateProfile::class);
     }
 
     /**

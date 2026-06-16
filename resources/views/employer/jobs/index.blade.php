@@ -85,6 +85,17 @@
                         </div>
 
                         <div class="flex items-center gap-2 ml-4 shrink-0">
+                            <!-- Application count badge -->
+                            @if ($job->applications_count > 0)
+                                <a href="{{ route('employer.applications.index', ['job_id' => $job->id]) }}"
+                                    class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md bg-indigo-50 text-indigo-700 font-medium hover:bg-indigo-100">
+                                    {{ $job->applications_count }}
+                                    {{ Str::plural('applicant', $job->applications_count) }}
+                                </a>
+                            @else
+                                <span class="text-xs text-gray-400 px-2.5 py-1.5">0 applicants</span>
+                            @endif
+
                             <!-- Toggle status -->
                             <form method="POST" action="{{ route('employer.jobs.toggle-status', $job) }}">
                                 @csrf

@@ -34,6 +34,31 @@ Standard Laravel 13 layout:
   code still reads naturally (`Job::create(...)`, `$company->jobs`, etc.).
 - `applications` — links a `User` (candidate) to a `Job` listing.
 
+## Email Notifications
+
+Two queued notifications are in `app/Notifications/`:
+
+- `NewApplicationReceived` — sent to the employer when a candidate submits an application.
+- `ApplicationStatusChanged` — sent to the candidate when an employer updates their application status.
+
+Both implement `ShouldQueue` and use the `mail` channel.
+
+### Local development setup
+
+Set `MAIL_MAILER=log` in `.env`. Emails are written to `storage/logs/laravel.log` — no SMTP credentials required.
+
+Start the queue worker to process queued notifications:
+
+```bash
+php artisan queue:work
+```
+
+To run the worker once (consume available jobs and exit):
+
+```bash
+php artisan queue:work --stop-when-empty
+```
+
 ## Coding Conventions
 
 - PSR-12 coding style (enforced via Laravel Pint).
