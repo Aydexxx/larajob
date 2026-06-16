@@ -74,10 +74,16 @@ export default {
                     '0%': { opacity: '0', transform: 'translateY(-12px) scale(0.98)' },
                     '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
                 },
+                /* Slow, barely-there drift for the hero's decorative glow blobs. */
+                'float-slow': {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-16px)' },
+                },
             },
             animation: {
                 'fade-in-up': 'fade-in-up 0.5s ease-out both',
                 'toast-in': 'toast-in 0.25s ease-out both',
+                'float-slow': 'float-slow 9s ease-in-out infinite',
             },
         },
     },

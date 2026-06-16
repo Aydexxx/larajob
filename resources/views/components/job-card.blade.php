@@ -19,7 +19,7 @@
 
 @if ($layout === 'row')
     <a href="{{ route('jobs.show', $job) }}"
-        class="surface group block p-5 transition-all duration-200 hover:shadow-elevated hover:border-brand-200">
+        {{ $attributes->merge(['class' => 'surface group block p-5 transition-all duration-200 hover:shadow-elevated hover:border-brand-200 motion-safe:hover:-translate-y-0.5']) }}>
         <div class="flex items-start gap-4">
             <x-ui.avatar :name="$company?->name ?? '?'" :src="$logo" size="md" />
 
@@ -53,7 +53,7 @@
     </a>
 @else
     <a href="{{ route('jobs.show', $job) }}"
-        class="surface group flex flex-col p-5 h-full transition-all duration-200 hover:shadow-elevated hover:border-brand-200 hover:-translate-y-0.5">
+        {{ $attributes->merge(['class' => 'surface group flex flex-col p-5 h-full transition-all duration-200 hover:shadow-elevated hover:border-brand-200 motion-safe:hover:-translate-y-0.5']) }}>
         <div class="flex items-center gap-3 mb-4">
             <x-ui.avatar :name="$company?->name ?? '?'" :src="$logo" size="sm" />
             <p class="text-sm text-gray-500 truncate">{{ $company?->name }}</p>

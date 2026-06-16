@@ -10,7 +10,7 @@
             </div>
 
             <!-- Search bar -->
-            <form method="GET" action="{{ route('jobs.index') }}" id="filter-form">
+            <form method="GET" action="{{ route('jobs.index') }}" id="filter-form" data-loading-form>
                 @if (request('company'))
                     <input type="hidden" name="company" value="{{ request('company') }}">
                 @endif
@@ -61,7 +61,7 @@
                                         <label class="flex items-center gap-2.5 cursor-pointer group">
                                             <input type="checkbox" name="types[]" value="{{ $value }}"
                                                 {{ in_array($value, (array) request('types', [])) ? 'checked' : '' }}
-                                                onchange="document.getElementById('filter-form').submit()"
+                                                onchange="document.getElementById('filter-form').requestSubmit()"
                                                 class="rounded border-gray-300 text-brand-600 focus:ring-brand-500" />
                                             <span class="text-sm text-gray-600 group-hover:text-gray-900">{{ $label }}</span>
                                         </label>
@@ -75,7 +75,7 @@
                                 <label class="flex items-center gap-2.5 cursor-pointer group">
                                     <input type="checkbox" name="remote" value="1"
                                         {{ request()->boolean('remote') ? 'checked' : '' }}
-                                        onchange="document.getElementById('filter-form').submit()"
+                                        onchange="document.getElementById('filter-form').requestSubmit()"
                                         class="rounded border-gray-300 text-brand-600 focus:ring-brand-500" />
                                     <span class="text-sm text-gray-600 group-hover:text-gray-900">Remote only</span>
                                 </label>
@@ -108,7 +108,7 @@
 
                         <div class="space-y-4">
                             @forelse ($jobs as $job)
-                                <x-job-card :job="$job" layout="row" />
+                                <x-job-card :job="$job" layout="row" data-reveal style="--reveal-delay: {{ min($loop->index, 8) * 45 }}ms" />
                             @empty
                                 <x-ui.card>
                                     <x-ui.empty-state

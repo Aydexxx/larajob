@@ -37,6 +37,15 @@
     .rich-text {
         @apply text-gray-600 leading-relaxed whitespace-pre-line;
     }
+
+    /* Sticky navbar deepens its shadow / solidifies once the page scrolls. */
+    [data-navbar] {
+        @apply transition-[box-shadow,background-color] duration-300 ease-out;
+    }
+
+    [data-navbar].is-scrolled {
+        @apply bg-white/95 shadow-soft;
+    }
 }
 
 @layer utilities {
@@ -55,5 +64,70 @@
     }
     .scrollbar-slim::-webkit-scrollbar-track {
         @apply bg-transparent;
+    }
+}
+
+/* =====================================================================
+   Motion layer — subtle scroll reveals, counters and navigation feedback.
+   Every effect degrades gracefully: with no JavaScript the page renders
+   fully visible, and all motion is suppressed under prefers-reduced-motion.
+   ===================================================================== */
+
+/* Disable native smooth scrolling for users who prefer reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/*
+ * Scroll-reveal. The hidden starting state is scoped to `.js` (added the moment
+ * scripts run) so content is never hidden without JavaScript, and is further
+ * gated behind `no-preference` so reduced-motion users never see it animate.
+ * The IntersectionObserver adds `.is-visible` once, on entry.
+ */
+@media (prefers-reduced-motion: no-preference) {
+    .js [data-reveal] {
+        opacity: 0;
+        transform: translateY(16px);
+        transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        transition-delay: var(--reveal-delay, 0ms);
+        will-change: opacity, transform;
+    }
+
+    .js [data-reveal].is-visible {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Slim top progress bar shown during search/filter page navigations. */
+#nav-progress {
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 2px;
+    z-index: 60;
+    transform: scaleX(0);
+    transform-origin: left center;
+    background-image: linear-gradient(90deg, #6366f1, #4338ca);
+    opacity: 0;
+    pointer-events: none;
+}
+
+#nav-progress.is-active {
+    opacity: 1;
+    animation: nav-progress 1.8s ease-out forwards;
+}
+
+@keyframes nav-progress {
+    0%   { transform: scaleX(0); }
+    40%  { transform: scaleX(0.5); }
+    100% { transform: scaleX(0.92); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #nav-progress.is-active {
+        animation: none;
+        transform: scaleX(1);
     }
 }

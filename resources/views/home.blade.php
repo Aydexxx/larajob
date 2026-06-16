@@ -6,12 +6,15 @@
         <!-- decorative dotted grid -->
         <div class="absolute inset-0 opacity-[0.18]" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 32px 32px;" aria-hidden="true"></div>
         <!-- glow blobs -->
-        <div class="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-brand-400/30 blur-3xl" aria-hidden="true"></div>
-        <div class="absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-violet-500/20 blur-3xl" aria-hidden="true"></div>
+        <div class="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-brand-400/30 blur-3xl motion-safe:animate-float-slow" aria-hidden="true"></div>
+        <div class="absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-violet-500/20 blur-3xl motion-safe:animate-float-slow [animation-delay:-4.5s]" aria-hidden="true"></div>
 
         <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
             <span class="inline-flex items-center gap-2 rounded-full bg-white/10 ring-1 ring-white/20 px-3.5 py-1.5 text-sm font-medium text-brand-50 animate-fade-in-up">
-                <span class="h-1.5 w-1.5 rounded-full bg-green-400"></span>
+                <span class="relative flex h-1.5 w-1.5">
+                    <span class="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 motion-safe:animate-ping"></span>
+                    <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-green-400"></span>
+                </span>
                 {{ number_format($totalJobs) }} open roles hiring right now
             </span>
 
@@ -25,7 +28,7 @@
             </p>
 
             <!-- Search -->
-            <form action="{{ route('jobs.index') }}" method="GET"
+            <form action="{{ route('jobs.index') }}" method="GET" data-loading-form
                 class="mt-10 max-w-3xl mx-auto bg-white rounded-2xl p-2 shadow-elevated flex flex-col sm:flex-row gap-2 animate-fade-in-up">
                 <div class="flex-1 flex items-center gap-2 px-3">
                     <svg class="h-5 w-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
@@ -48,7 +51,7 @@
                 <span class="text-brand-200">Popular:</span>
                 @foreach (['Software Engineer', 'Product Designer', 'Data Scientist', 'Marketing'] as $term)
                     <a href="{{ route('jobs.index', ['search' => $term]) }}"
-                        class="rounded-full bg-white/10 hover:bg-white/20 ring-1 ring-white/15 px-3 py-1 transition">
+                        class="rounded-full bg-white/10 hover:bg-white/20 ring-1 ring-white/15 px-3 py-1 transition-all duration-200 motion-safe:hover:scale-105 motion-safe:hover:-translate-y-0.5">
                         {{ $term }}
                     </a>
                 @endforeach
@@ -58,17 +61,17 @@
 
     <!-- ============ STATS ============ -->
     <section class="bg-white border-b border-gray-200">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-3 gap-6 text-center">
+        <div data-reveal class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-3 gap-6 text-center">
             <div>
-                <p class="text-3xl sm:text-4xl font-extrabold text-brand-600">{{ number_format($totalJobs) }}</p>
+                <p class="text-3xl sm:text-4xl font-extrabold text-brand-600" data-count-to="{{ $totalJobs }}">{{ number_format($totalJobs) }}</p>
                 <p class="text-sm text-gray-500 mt-1">Active jobs</p>
             </div>
             <div class="border-x border-gray-100">
-                <p class="text-3xl sm:text-4xl font-extrabold text-brand-600">{{ number_format($totalCompanies) }}</p>
+                <p class="text-3xl sm:text-4xl font-extrabold text-brand-600" data-count-to="{{ $totalCompanies }}">{{ number_format($totalCompanies) }}</p>
                 <p class="text-sm text-gray-500 mt-1">Companies hiring</p>
             </div>
             <div>
-                <p class="text-3xl sm:text-4xl font-extrabold text-brand-600">{{ number_format($totalCandidates) }}</p>
+                <p class="text-3xl sm:text-4xl font-extrabold text-brand-600" data-count-to="{{ $totalCandidates }}">{{ number_format($totalCandidates) }}</p>
                 <p class="text-sm text-gray-500 mt-1">Candidates</p>
             </div>
         </div>
@@ -77,7 +80,7 @@
     <!-- ============ HOW IT WORKS ============ -->
     <section class="py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center max-w-2xl mx-auto">
+            <div data-reveal class="text-center max-w-2xl mx-auto">
                 <p class="text-sm font-semibold uppercase tracking-widest text-brand-600">How it works</p>
                 <h2 class="mt-2 text-3xl font-extrabold text-gray-900">Built for both sides of the table</h2>
                 <p class="mt-3 text-gray-500">Whether you're looking for your next role or your next hire, getting started takes minutes.</p>
@@ -85,7 +88,7 @@
 
             <div class="mt-14 grid lg:grid-cols-2 gap-6">
                 <!-- Candidates -->
-                <div class="surface p-8">
+                <div data-reveal class="surface p-8">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-100 text-brand-600">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0"/></svg>
@@ -113,7 +116,7 @@
                 </div>
 
                 <!-- Employers -->
-                <div class="surface p-8">
+                <div data-reveal style="--reveal-delay: 120ms" class="surface p-8">
                     <div class="flex items-center gap-3 mb-6">
                         <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-accent-100 text-accent-600">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"/></svg>
@@ -146,7 +149,7 @@
     <!-- ============ FEATURED JOBS ============ -->
     <section class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-end justify-between mb-10">
+            <div data-reveal class="flex items-end justify-between mb-10">
                 <div>
                     <p class="text-sm font-semibold uppercase tracking-widest text-brand-600">Fresh openings</p>
                     <h2 class="mt-2 text-3xl font-extrabold text-gray-900">Latest opportunities</h2>
@@ -162,7 +165,7 @@
             @else
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                     @foreach ($featured as $job)
-                        <x-job-card :job="$job" layout="grid" />
+                        <x-job-card :job="$job" layout="grid" data-reveal style="--reveal-delay: {{ $loop->index * 70 }}ms" />
                     @endforeach
                 </div>
             @endif
@@ -177,7 +180,7 @@
     @if ($companies->isNotEmpty())
         <section class="py-20 bg-gray-50 border-y border-gray-200">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center max-w-2xl mx-auto mb-12">
+                <div data-reveal class="text-center max-w-2xl mx-auto mb-12">
                     <p class="text-sm font-semibold uppercase tracking-widest text-brand-600">Hiring now</p>
                     <h2 class="mt-2 text-3xl font-extrabold text-gray-900">Companies on LaraJob</h2>
                 </div>
@@ -185,7 +188,8 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                     @foreach ($companies as $company)
                         <a href="{{ route('jobs.index', ['company' => $company->name]) }}"
-                            class="surface group p-6 text-center transition-all duration-200 hover:shadow-elevated hover:border-brand-200 hover:-translate-y-0.5">
+                            data-reveal style="--reveal-delay: {{ $loop->index * 60 }}ms"
+                            class="surface group p-6 text-center transition-all duration-200 hover:shadow-elevated hover:border-brand-200 motion-safe:hover:-translate-y-0.5">
                             <div class="flex justify-center mb-4">
                                 <x-ui.avatar :name="$company->name" :src="$company->logo ? Storage::url($company->logo) : null" size="lg" />
                             </div>
@@ -208,7 +212,7 @@
     <!-- ============ CTA ============ -->
     <section class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="relative overflow-hidden rounded-4xl bg-gradient-to-br from-brand-700 via-brand-600 to-brand-800 px-6 py-16 sm:px-16 text-center shadow-glow">
+            <div data-reveal class="relative overflow-hidden rounded-4xl bg-gradient-to-br from-brand-700 via-brand-600 to-brand-800 px-6 py-16 sm:px-16 text-center shadow-glow">
                 <div class="absolute inset-0 opacity-[0.15]" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 28px 28px;" aria-hidden="true"></div>
                 <div class="relative max-w-2xl mx-auto">
                     <h2 class="text-3xl sm:text-4xl font-extrabold text-white">Ready to make your next move?</h2>
