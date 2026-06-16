@@ -18,14 +18,16 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        // Registration now requires a role and redirects to the role's dashboard.
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
+            'role' => 'candidate',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect(route('candidate.dashboard', absolute: false));
     }
 }

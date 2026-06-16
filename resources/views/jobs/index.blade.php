@@ -1,170 +1,127 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Browse Jobs') }}
-        </h2>
-    </x-slot>
+    <x-slot name="title">Browse Jobs</x-slot>
 
     <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
+            <div class="mb-6">
+                <h1 class="text-2xl font-extrabold text-gray-900">Browse jobs</h1>
+                <p class="text-sm text-gray-500 mt-1">Find your next role from {{ number_format($jobs->total()) }} open {{ Str::plural('position', $jobs->total()) }}.</p>
+            </div>
+
             <!-- Search bar -->
             <form method="GET" action="{{ route('jobs.index') }}" id="filter-form">
-                <div class="flex flex-col sm:flex-row gap-3 mb-8 bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
-                    <input type="text" name="search" value="{{ request('search') }}"
-                        placeholder="Job title or keyword"
-                        class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" />
-                    <input type="text" name="location" value="{{ request('location') }}"
-                        placeholder="Location"
-                        class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" />
-                    <button type="submit"
-                        class="px-6 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 text-sm shrink-0">
-                        Search
-                    </button>
-                    @if (request()->hasAny(['search', 'location', 'types', 'remote', 'salary_min']))
-                        <a href="{{ route('jobs.index') }}"
-                            class="px-4 py-2.5 border border-gray-300 text-gray-600 font-medium rounded-lg hover:bg-gray-50 text-sm shrink-0 text-center">
-                            Clear
-                        </a>
-                    @endif
+                @if (request('company'))
+                    <input type="hidden" name="company" value="{{ request('company') }}">
+                @endif
+
+                <div class="surface flex flex-col sm:flex-row gap-2 p-2 mb-6">
+                    <div class="flex-1 flex items-center gap-2 px-3">
+                        <svg class="h-5 w-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Job title or keyword"
+                            class="w-full border-0 py-2.5 text-gray-900 placeholder-gray-400 focus:ring-0 text-sm bg-transparent" />
+                    </div>
+                    <div class="hidden sm:block w-px bg-gray-200 my-2"></div>
+                    <div class="flex-1 flex items-center gap-2 px-3">
+                        <svg class="h-5 w-5 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.7" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/></svg>
+                        <input type="text" name="location" value="{{ request('location') }}" placeholder="Location"
+                            class="w-full border-0 py-2.5 text-gray-900 placeholder-gray-400 focus:ring-0 text-sm bg-transparent" />
+                    </div>
+                    <x-ui.button type="submit">Search</x-ui.button>
                 </div>
+
+                <!-- Active filter chip -->
+                @if (request('company'))
+                    <div class="flex items-center gap-2 mb-6">
+                        <span class="text-sm text-gray-500">Showing roles at</span>
+                        <x-ui.badge color="brand" size="md">{{ request('company') }}</x-ui.badge>
+                        <a href="{{ route('jobs.index') }}" class="text-sm text-gray-400 hover:text-gray-700">Clear</a>
+                    </div>
+                @endif
 
                 <div class="flex flex-col lg:flex-row gap-8">
 
                     <!-- Sidebar filters -->
-                    <aside class="lg:w-60 shrink-0" x-data="{ open: false }">
-
+                    <aside class="lg:w-64 shrink-0" x-data="{ open: false }">
                         <!-- Mobile toggle -->
                         <button type="button" @click="open = !open"
-                            class="lg:hidden w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 mb-3">
+                            class="lg:hidden w-full flex items-center justify-between surface px-4 py-3 text-sm font-medium text-gray-700 mb-3">
                             <span>Filters</span>
                             <svg :class="open ? 'rotate-180' : ''" class="h-4 w-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
 
-                        <div :class="{ 'hidden': !open }" class="hidden lg:block space-y-6">
-
+                        <div :class="{ 'hidden': !open }" class="hidden lg:block space-y-4">
                             <!-- Job type -->
-                            <div class="bg-white border border-gray-200 rounded-xl p-5">
-                                <h3 class="text-sm font-semibold text-gray-700 mb-3">Job Type</h3>
-                                <div class="space-y-2">
+                            <div class="surface p-5">
+                                <h3 class="text-sm font-semibold text-gray-900 mb-3">Job type</h3>
+                                <div class="space-y-2.5">
                                     @foreach (['full-time' => 'Full Time', 'part-time' => 'Part Time', 'contract' => 'Contract', 'internship' => 'Internship'] as $value => $label)
-                                        <label class="flex items-center gap-2 cursor-pointer">
+                                        <label class="flex items-center gap-2.5 cursor-pointer group">
                                             <input type="checkbox" name="types[]" value="{{ $value }}"
                                                 {{ in_array($value, (array) request('types', [])) ? 'checked' : '' }}
                                                 onchange="document.getElementById('filter-form').submit()"
-                                                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                            <span class="text-sm text-gray-600">{{ $label }}</span>
+                                                class="rounded border-gray-300 text-brand-600 focus:ring-brand-500" />
+                                            <span class="text-sm text-gray-600 group-hover:text-gray-900">{{ $label }}</span>
                                         </label>
                                     @endforeach
                                 </div>
                             </div>
 
                             <!-- Remote -->
-                            <div class="bg-white border border-gray-200 rounded-xl p-5">
-                                <h3 class="text-sm font-semibold text-gray-700 mb-3">Work Mode</h3>
-                                <label class="flex items-center gap-2 cursor-pointer">
+                            <div class="surface p-5">
+                                <h3 class="text-sm font-semibold text-gray-900 mb-3">Work mode</h3>
+                                <label class="flex items-center gap-2.5 cursor-pointer group">
                                     <input type="checkbox" name="remote" value="1"
                                         {{ request()->boolean('remote') ? 'checked' : '' }}
                                         onchange="document.getElementById('filter-form').submit()"
-                                        class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" />
-                                    <span class="text-sm text-gray-600">Remote only</span>
+                                        class="rounded border-gray-300 text-brand-600 focus:ring-brand-500" />
+                                    <span class="text-sm text-gray-600 group-hover:text-gray-900">Remote only</span>
                                 </label>
                             </div>
 
                             <!-- Minimum salary -->
-                            <div class="bg-white border border-gray-200 rounded-xl p-5">
-                                <h3 class="text-sm font-semibold text-gray-700 mb-3">Minimum Salary</h3>
+                            <div class="surface p-5">
+                                <h3 class="text-sm font-semibold text-gray-900 mb-3">Minimum salary</h3>
                                 <input type="number" name="salary_min" min="0" step="5000"
                                     value="{{ request('salary_min') }}"
                                     placeholder="e.g. 50000"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500" />
-                                <button type="submit"
-                                    class="mt-2 w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">
-                                    Apply
-                                </button>
+                                    class="w-full rounded-xl border-gray-300 text-sm focus:ring-brand-500 focus:border-brand-500" />
+                                <x-ui.button type="submit" variant="secondary" size="sm" class="mt-3 w-full">Apply</x-ui.button>
                             </div>
+
+                            @if (request()->hasAny(['search', 'location', 'types', 'remote', 'salary_min', 'company']))
+                                <a href="{{ route('jobs.index') }}"
+                                    class="block text-center text-sm text-gray-500 hover:text-gray-800 py-2">
+                                    Clear all filters
+                                </a>
+                            @endif
                         </div>
                     </aside>
 
                     <!-- Job list -->
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm text-gray-500 mb-5">
-                            {{ $jobs->total() }} {{ Str::plural('job', $jobs->total()) }} found
+                        <p class="text-sm text-gray-500 mb-4">
+                            {{ number_format($jobs->total()) }} {{ Str::plural('job', $jobs->total()) }} found
                         </p>
 
-                        @forelse ($jobs as $job)
-                            <a href="{{ route('jobs.show', $job) }}"
-                                class="block bg-white border border-gray-200 rounded-xl p-5 mb-4 hover:shadow-md hover:border-indigo-200 transition-all">
+                        <div class="space-y-4">
+                            @forelse ($jobs as $job)
+                                <x-job-card :job="$job" layout="row" />
+                            @empty
+                                <x-ui.card>
+                                    <x-ui.empty-state
+                                        title="No jobs match your search"
+                                        description="Try adjusting your filters or search terms to see more results.">
+                                        <x-slot name="action">
+                                            <x-ui.button :href="route('jobs.index')" variant="outline" size="sm">Clear filters</x-ui.button>
+                                        </x-slot>
+                                    </x-ui.empty-state>
+                                </x-ui.card>
+                            @endforelse
+                        </div>
 
-                                <div class="flex items-start gap-4">
-                                    <!-- Logo -->
-                                    @if ($job->company?->logo)
-                                        <img src="{{ Storage::url($job->company->logo) }}"
-                                            alt="{{ $job->company->name }}"
-                                            class="h-12 w-12 rounded-lg object-cover border border-gray-100 shrink-0" />
-                                    @else
-                                        <div class="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-                                            <span class="text-indigo-600 font-bold">
-                                                {{ mb_strtoupper(mb_substr($job->company?->name ?? '?', 0, 1)) }}
-                                            </span>
-                                        </div>
-                                    @endif
-
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
-                                            <div>
-                                                <h3 class="font-semibold text-gray-900 text-base leading-snug">
-                                                    {{ $job->title }}
-                                                </h3>
-                                                <p class="text-sm text-gray-500 mt-0.5">
-                                                    {{ $job->company?->name }}
-                                                </p>
-                                            </div>
-                                            <span class="text-xs text-gray-400 shrink-0">
-                                                {{ $job->created_at->diffForHumans() }}
-                                            </span>
-                                        </div>
-
-                                        <div class="flex flex-wrap gap-2 mt-3">
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700">
-                                                {{ str_replace('-', ' ', ucfirst($job->type)) }}
-                                            </span>
-                                            @if ($job->is_remote)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-green-50 text-green-700">
-                                                    Remote
-                                                </span>
-                                            @endif
-                                            @if ($job->location)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
-                                                    {{ $job->location }}
-                                                </span>
-                                            @endif
-                                            @if ($job->salary_min || $job->salary_max)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-yellow-50 text-yellow-700">
-                                                    @if ($job->salary_min && $job->salary_max)
-                                                        ${{ number_format($job->salary_min / 1000, 0) }}k – ${{ number_format($job->salary_max / 1000, 0) }}k
-                                                    @elseif ($job->salary_min)
-                                                        From ${{ number_format($job->salary_min / 1000, 0) }}k
-                                                    @else
-                                                        Up to ${{ number_format($job->salary_max / 1000, 0) }}k
-                                                    @endif
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        @empty
-                            <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
-                                <p class="text-gray-500 text-sm mb-2">No jobs match your search.</p>
-                                <a href="{{ route('jobs.index') }}"
-                                    class="text-indigo-600 text-sm hover:underline">Clear filters</a>
-                            </div>
-                        @endforelse
-
-                        <!-- Pagination -->
                         @if ($jobs->hasPages())
                             <div class="mt-8">
                                 {{ $jobs->links() }}

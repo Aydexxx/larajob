@@ -1,3 +1,59 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        @apply text-gray-700 antialiased;
+    }
+
+    h1, h2, h3, h4 {
+        @apply tracking-tight text-gray-900;
+    }
+
+    /* Brand-tinted text selection. */
+    ::selection {
+        @apply bg-brand-600/20 text-brand-900;
+    }
+
+    /* Consistent, accessible focus ring for keyboard users. */
+    :focus-visible {
+        @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-white;
+    }
+}
+
+@layer components {
+    /* Reusable surface used by cards and panels across the app. */
+    .surface {
+        @apply bg-white border border-gray-200 rounded-2xl shadow-soft;
+    }
+
+    /* Long-form rich text (job descriptions, bios). */
+    .rich-text {
+        @apply text-gray-600 leading-relaxed whitespace-pre-line;
+    }
+}
+
+@layer utilities {
+    /* Hide content until Alpine initialises (used with x-cloak). */
+    [x-cloak] {
+        display: none !important;
+    }
+
+    /* Refined, unobtrusive scrollbar. */
+    .scrollbar-slim::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+    }
+    .scrollbar-slim::-webkit-scrollbar-thumb {
+        @apply bg-gray-300 rounded-full;
+    }
+    .scrollbar-slim::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
+}

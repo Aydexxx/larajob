@@ -20,6 +20,10 @@ class PublicJobController extends Controller
                 fn ($q) => $q->where('location', 'like', '%' . $request->input('location') . '%')
             )
             ->when(
+                $request->filled('company'),
+                fn ($q) => $q->whereHas('company', fn ($c) => $c->where('name', 'like', '%' . $request->input('company') . '%'))
+            )
+            ->when(
                 $request->filled('types'),
                 fn ($q) => $q->filterType((array) $request->input('types'))
             )

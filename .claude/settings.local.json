@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(php artisan *)",
-      "Bash(./vendor/bin/pint --test app/Models database/migrations)"
+      "Bash(./vendor/bin/pint --test app/Models database/migrations)",
+      "PowerShell(npm run build 2>&1)",
+      "PowerShell(php verify_render.php 2>&1)"
     ]
   }
 }

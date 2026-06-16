@@ -1,58 +1,165 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# LaraJob
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A full-featured global job board built with Laravel 13 — portfolio-quality demonstration of professional PHP / Laravel development practices.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Three-role system** — Admin, Employer, and Candidate, each with a dedicated dashboard and enforced access control
+- **Employer tools** — Company profile management; full job listing CRUD with status control (active / draft / closed)
+- **Candidate tools** — Browse and search open positions; one-click apply with cover letter; application tracking dashboard; withdraw pending applications
+- **Public job board** — Live search by keyword, employment type, and remote flag; company directory; individual job detail pages
+- **Email notifications** — Queued notifications when a candidate applies (employer notified) and when an employer updates a status (candidate notified)
+- **Admin panel** — View all users, companies, and applications; manage role assignments
+- **60-test suite** — PHPUnit tests covering auth flows, authorization boundaries, employer CRUD, candidate pipeline, and public browsing rules
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Screenshots
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+> Add screenshots here once deployed. Suggested views: homepage hero, job index with filters, employer dashboard, candidate applications list.
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| Layer | Technology |
+|---|---|
+| Framework | Laravel 13 |
+| Language | PHP 8.3 |
+| Database | SQLite (zero-config development) |
+| Templating | Blade |
+| Frontend | Alpine.js 3, Tailwind CSS 3 |
+| Build tool | Vite 8 |
+| Tests | PHPUnit 12 |
+| Code style | Laravel Pint (PSR-12) |
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Local Setup
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+### Prerequisites
 
-## Agentic Development
+- PHP 8.3+
+- Composer
+- Node.js 18+
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Steps
 
 ```bash
-composer require laravel/boost --dev
+# 1. Clone the repository
+git clone https://github.com/your-username/larajob.git
+cd larajob
 
-php artisan boost:install
+# 2. Install PHP dependencies
+composer install
+
+# 3. Set up the environment file
+cp .env.example .env
+php artisan key:generate
+
+# 4. Create and seed the database
+touch database/database.sqlite
+php artisan migrate:fresh --seed
+
+# 5. Build frontend assets
+npm install
+npm run build
+
+# 6. Start the development server
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Open [http://localhost:8000](http://localhost:8000).
 
-## Contributing
+Email is set to the `log` driver by default — all outgoing mail is written to `storage/logs/laravel.log`, so no SMTP credentials are needed.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+To process queued notifications (application alerts):
 
-## Code of Conduct
+```bash
+php artisan queue:work --stop-when-empty
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+To run the full dev environment (server + queue + Vite + log tail) in one command:
 
-## Security Vulnerabilities
+```bash
+composer dev
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Running Tests
+
+```bash
+php artisan test
+```
+
+Tests use an in-memory SQLite database configured in `phpunit.xml` and do not touch your development database.
+
+## Demo Accounts
+
+All accounts use the password `password`.
+
+### Admin
+
+| Email | Password |
+|---|---|
+| admin@larajob.test | `password` |
+
+### Employers
+
+Each employer owns one company and 3–6 active job listings.
+
+| Email | Company | Location |
+|---|---|---|
+| employer1@larajob.test | Apex Digital Solutions | San Francisco, CA, USA |
+| employer2@larajob.test | Meridian Cloud Technologies | New York, NY, USA |
+| employer3@larajob.test | Cobalt Software Group | London, UK |
+| employer4@larajob.test | Stratos Labs | Berlin, Germany |
+| employer5@larajob.test | Helix Data Systems | Toronto, Canada |
+| employer6@larajob.test | Luminary Studio | Amsterdam, Netherlands |
+| employer7@larajob.test | Pinnacle Tech | Sydney, Australia |
+| employer8@larajob.test | Orion Analytics | Singapore |
+
+### Candidates
+
+Each candidate has a complete profile and 2–5 submitted applications.
+
+| Email | Password |
+|---|---|
+| candidate1@larajob.test | `password` |
+| candidate2@larajob.test | `password` |
+| candidate3@larajob.test | `password` |
+| candidate4@larajob.test | `password` |
+| candidate5@larajob.test | `password` |
+| candidate6@larajob.test | `password` |
+| candidate7@larajob.test | `password` |
+| candidate8@larajob.test | `password` |
+| candidate9@larajob.test | `password` |
+| candidate10@larajob.test | `password` |
+| candidate11@larajob.test | `password` |
+| candidate12@larajob.test | `password` |
+| candidate13@larajob.test | `password` |
+| candidate14@larajob.test | `password` |
+| candidate15@larajob.test | `password` |
+
+## Architecture Overview
+
+### Data Model
+
+```
+User (role: admin | employer | candidate)
+ ├── Company          (employer only; one per employer)
+ │    └── Job         (table: job_listings; many per company)
+ │         └── Application  (many per job; unique per candidate)
+ └── CandidateProfile (candidate only; one per candidate)
+```
+
+> The job postings table is named `job_listings` instead of `jobs` to avoid colliding with Laravel's built-in queue tables. The model is still `App\Models\Job` with `protected $table = 'job_listings'`, so application code reads naturally.
+
+### Key Laravel Patterns Used
+
+| Pattern | Implementation |
+|---|---|
+| **Policies** | `JobPolicy` and `ApplicationPolicy` guard every mutating route — employers can only modify their own listings; candidates can only view their own applications |
+| **Form Requests** | `StoreJobRequest`, `UpdateJobRequest`, `StoreApplicationRequest`, `UpdateStatusRequest` keep validation out of controllers |
+| **Query Scopes** | `Job::active()` scope encapsulates `status = 'active' AND (expires_at IS NULL OR expires_at > now())`, reused across public listing, detail, and apply routes |
+| **Notifications** | `NewApplicationReceived` (to employer) and `ApplicationStatusChanged` (to candidate) — both implement `ShouldQueue` and use the `mail` channel |
+| **Middleware** | `CheckRole` (alias: `role`) guards role-specific route groups; returns 403 on a role mismatch |
+| **Factories / Seeders** | Full factory coverage (`CompanyFactory`, `JobFactory`, `ApplicationFactory`, `CandidateProfileFactory`) with states (`active()`, `remote()`, `pending()`, `accepted()`, etc.); one `migrate:fresh --seed` populates the entire platform |
+| **Tests** | 60 PHPUnit tests, 156 assertions; `RefreshDatabase` + `Notification::fake()` for isolation; authorization boundary tests deliberately send valid payloads to distinguish a 403 (policy) from a 422 (validation) |
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT — see [LICENSE](LICENSE).

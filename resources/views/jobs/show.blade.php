@@ -1,55 +1,41 @@
 <x-app-layout>
+    <x-slot name="title">{{ $job->title }}</x-slot>
+
     <div class="py-10 bg-gray-50 min-h-screen">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
 
             <!-- Back link -->
             <a href="{{ route('jobs.index') }}"
-                class="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-6">
-                ← Back to jobs
+                class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-800 mb-6 transition">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+                Back to jobs
             </a>
 
             <div class="flex flex-col lg:flex-row gap-8">
 
                 <!-- Main content -->
                 <article class="flex-1 min-w-0">
-                    <div class="bg-white border border-gray-200 rounded-xl p-7">
-
+                    <x-ui.card padding="p-7 sm:p-8">
                         <!-- Header -->
                         <div class="flex items-start gap-4 mb-6">
-                            @if ($job->company?->logo)
-                                <img src="{{ Storage::url($job->company->logo) }}"
-                                    alt="{{ $job->company->name }}"
-                                    class="h-16 w-16 rounded-xl object-cover border border-gray-100 shrink-0" />
-                            @else
-                                <div class="h-16 w-16 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0">
-                                    <span class="text-2xl font-bold text-indigo-600">
-                                        {{ mb_strtoupper(mb_substr($job->company?->name ?? '?', 0, 1)) }}
-                                    </span>
-                                </div>
-                            @endif
-                            <div>
-                                <h1 class="text-2xl font-bold text-gray-900 leading-tight">{{ $job->title }}</h1>
+                            <x-ui.avatar :name="$job->company?->name ?? '?'" :src="$job->company?->logo ? Storage::url($job->company->logo) : null" size="lg" />
+                            <div class="min-w-0">
+                                <h1 class="text-2xl font-extrabold text-gray-900 leading-tight">{{ $job->title }}</h1>
                                 <p class="text-gray-500 mt-1">{{ $job->company?->name }}</p>
                             </div>
                         </div>
 
                         <!-- Badges -->
-                        <div class="flex flex-wrap gap-2 mb-6">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-50 text-indigo-700">
-                                {{ str_replace('-', ' ', ucfirst($job->type)) }}
-                            </span>
+                        <div class="flex flex-wrap gap-2 mb-8">
+                            <x-ui.badge :status="$job->type" size="md" />
                             @if ($job->is_remote)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700">
-                                    Remote
-                                </span>
+                                <x-ui.badge color="green" size="md" dot>Remote</x-ui.badge>
                             @endif
                             @if ($job->location)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-600">
-                                    {{ $job->location }}
-                                </span>
+                                <x-ui.badge color="gray" size="md">{{ $job->location }}</x-ui.badge>
                             @endif
                             @if ($job->salary_min || $job->salary_max)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-50 text-yellow-700">
+                                <x-ui.badge color="accent" size="md">
                                     @if ($job->salary_min && $job->salary_max)
                                         ${{ number_format($job->salary_min) }} – ${{ number_format($job->salary_max) }}
                                     @elseif ($job->salary_min)
@@ -57,116 +43,96 @@
                                     @else
                                         Up to ${{ number_format($job->salary_max) }}
                                     @endif
-                                </span>
+                                </x-ui.badge>
                             @endif
                             @if ($job->expires_at)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-500">
-                                    Closes {{ $job->expires_at->format('M j, Y') }}
-                                </span>
+                                <x-ui.badge color="gray" size="md">Closes {{ $job->expires_at->format('M j, Y') }}</x-ui.badge>
                             @endif
                         </div>
 
                         <!-- Description -->
-                        <div class="prose prose-sm max-w-none text-gray-700 mb-8">
-                            <h2 class="text-base font-semibold text-gray-900 mb-3">About the Role</h2>
-                            <div class="whitespace-pre-line">{{ $job->description }}</div>
+                        <div class="mb-8">
+                            <h2 class="text-base font-bold text-gray-900 mb-3">About the role</h2>
+                            <div class="rich-text">{{ $job->description }}</div>
                         </div>
 
                         @if ($job->requirements)
-                            <div class="prose prose-sm max-w-none text-gray-700">
-                                <h2 class="text-base font-semibold text-gray-900 mb-3">Requirements</h2>
-                                <div class="whitespace-pre-line">{{ $job->requirements }}</div>
+                            <div>
+                                <h2 class="text-base font-bold text-gray-900 mb-3">Requirements</h2>
+                                <div class="rich-text">{{ $job->requirements }}</div>
                             </div>
                         @endif
-
-                    </div>
+                    </x-ui.card>
                 </article>
 
                 <!-- Sidebar -->
-                <aside class="lg:w-72 shrink-0 space-y-5">
-
+                <aside class="lg:w-80 shrink-0 space-y-5">
                     <!-- Apply card -->
-                    <div class="bg-white border border-gray-200 rounded-xl p-6">
-                        <h3 class="font-semibold text-gray-900 mb-4">Apply for this role</h3>
+                    <x-ui.card>
+                        <h3 class="font-bold text-gray-900 mb-4">Apply for this role</h3>
 
                         @auth
                             @if (Auth::user()->role === 'candidate')
                                 @if ($hasApplied)
-                                    <div class="w-full text-center px-5 py-3 bg-green-50 text-green-700 font-medium rounded-lg border border-green-200">
-                                        ✓ Already Applied
-                                    </div>
+                                    <x-ui.alert variant="success">You've already applied to this role.</x-ui.alert>
                                     <a href="{{ route('candidate.applications.index') }}"
-                                        class="block w-full text-center px-5 py-2 text-sm text-indigo-600 hover:underline mt-1">
+                                        class="block w-full text-center text-sm font-medium text-brand-600 hover:text-brand-700 mt-3">
                                         View my applications
                                     </a>
                                 @else
-                                    <a href="{{ route('candidate.applications.create', ['job_id' => $job->id]) }}"
-                                        class="block w-full text-center px-5 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700">
-                                        Apply Now
-                                    </a>
+                                    <x-ui.button :href="route('candidate.applications.create', ['job_id' => $job->id])" size="lg" class="w-full">
+                                        Apply now
+                                    </x-ui.button>
                                 @endif
                             @elseif (Auth::user()->role === 'employer')
-                                {{-- Employers don't apply --}}
+                                <p class="text-sm text-gray-500">You're signed in as an employer.</p>
                             @endif
                         @else
-                            <p class="text-sm text-gray-500 mb-4">
-                                You need an account to apply for this job.
-                            </p>
-                            <a href="{{ route('register') }}"
-                                class="block w-full text-center px-5 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 mb-2">
-                                Create Account
-                            </a>
-                            <a href="{{ route('login') }}"
-                                class="block w-full text-center px-5 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 text-sm">
-                                Log in
-                            </a>
+                            <p class="text-sm text-gray-500 mb-4">You need a candidate account to apply.</p>
+                            <div class="space-y-2">
+                                <x-ui.button :href="route('register')" size="lg" class="w-full">Create account</x-ui.button>
+                                <x-ui.button :href="route('login')" variant="outline" class="w-full">Log in</x-ui.button>
+                            </div>
                         @endauth
 
                         <p class="text-xs text-gray-400 mt-4 text-center">
                             Posted {{ $job->created_at->diffForHumans() }}
                         </p>
-                    </div>
+                    </x-ui.card>
 
                     <!-- Company card -->
                     @if ($job->company)
-                        <div class="bg-white border border-gray-200 rounded-xl p-6">
-                            <h3 class="font-semibold text-gray-900 mb-4">About the Company</h3>
+                        <x-ui.card>
+                            <h3 class="font-bold text-gray-900 mb-4">About the company</h3>
 
                             <div class="flex items-center gap-3 mb-4">
-                                @if ($job->company->logo)
-                                    <img src="{{ Storage::url($job->company->logo) }}"
-                                        alt="{{ $job->company->name }}"
-                                        class="h-10 w-10 rounded-lg object-cover border border-gray-100" />
-                                @else
-                                    <div class="h-10 w-10 rounded-lg bg-indigo-100 flex items-center justify-center">
-                                        <span class="font-bold text-indigo-600">
-                                            {{ mb_strtoupper(mb_substr($job->company->name, 0, 1)) }}
-                                        </span>
-                                    </div>
-                                @endif
-                                <div>
-                                    <p class="font-medium text-gray-900 text-sm">{{ $job->company->name }}</p>
+                                <x-ui.avatar :name="$job->company->name" :src="$job->company->logo ? Storage::url($job->company->logo) : null" size="sm" />
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-gray-900 text-sm truncate">{{ $job->company->name }}</p>
                                     @if ($job->company->location)
-                                        <p class="text-xs text-gray-500">{{ $job->company->location }}</p>
+                                        <p class="text-xs text-gray-500 truncate">{{ $job->company->location }}</p>
                                     @endif
                                 </div>
                             </div>
 
                             @if ($job->company->description)
-                                <p class="text-sm text-gray-600 mb-4 line-clamp-4">
-                                    {{ $job->company->description }}
-                                </p>
+                                <p class="text-sm text-gray-600 mb-4 line-clamp-4">{{ $job->company->description }}</p>
                             @endif
 
-                            @if ($job->company->website)
-                                <a href="{{ $job->company->website }}" target="_blank" rel="noopener noreferrer"
-                                    class="text-sm text-indigo-600 hover:underline">
-                                    Visit website →
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+                                <a href="{{ route('jobs.index', ['company' => $job->company->name]) }}"
+                                    class="text-sm font-medium text-brand-600 hover:text-brand-700">
+                                    See all roles
                                 </a>
-                            @endif
-                        </div>
+                                @if ($job->company->website)
+                                    <a href="{{ $job->company->website }}" target="_blank" rel="noopener noreferrer"
+                                        class="text-sm text-gray-500 hover:text-gray-800">
+                                        Visit website &rarr;
+                                    </a>
+                                @endif
+                            </div>
+                        </x-ui.card>
                     @endif
-
                 </aside>
 
             </div>

@@ -1,64 +1,63 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
+    <div class="mb-8">
+        <h1 class="text-2xl font-extrabold text-gray-900">Create your account</h1>
+        <p class="mt-1 text-sm text-gray-500">Join LaraJob to find your next role or your next hire.</p>
+    </div>
+
+    <form method="POST" action="{{ route('register') }}" class="space-y-5">
         @csrf
 
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-        </div>
+        <x-ui.input
+            name="name"
+            label="Full name"
+            type="text"
+            :value="old('name')"
+            required
+            autofocus
+            autocomplete="name"
+            placeholder="Jane Doe" />
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+        <x-ui.input
+            name="email"
+            label="Email"
+            type="email"
+            :value="old('email')"
+            required
+            autocomplete="username"
+            placeholder="you@example.com" />
 
         <!-- Role -->
-        <div class="mt-4">
-            <x-input-label for="role" :value="__('I am a')" />
-
-            <select id="role" name="role" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                <option value="candidate" @selected(old('role') === 'candidate')>{{ __('Candidate') }}</option>
-                <option value="employer" @selected(old('role') === 'employer')>{{ __('Employer') }}</option>
+        <div>
+            <label for="role" class="block text-sm font-medium text-gray-700 mb-1.5">I am a</label>
+            <select id="role" name="role" required
+                class="block w-full rounded-xl border-gray-300 text-gray-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm">
+                <option value="candidate" @selected(old('role') === 'candidate')>Candidate — looking for a job</option>
+                <option value="employer" @selected(old('role') === 'employer')>Employer — hiring talent</option>
             </select>
-
-            <x-input-error :messages="$errors->get('role')" class="mt-2" />
+            <x-input-error :messages="$errors->get('role')" class="mt-1.5" />
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+        <x-ui.input
+            name="password"
+            label="Password"
+            type="password"
+            required
+            autocomplete="new-password"
+            placeholder="••••••••" />
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
+        <x-ui.input
+            name="password_confirmation"
+            label="Confirm password"
+            type="password"
+            required
+            autocomplete="new-password"
+            placeholder="••••••••" />
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
+        <x-ui.button type="submit" size="lg" class="w-full">Create account</x-ui.button>
     </form>
+
+    <p class="mt-8 text-center text-sm text-gray-500">
+        Already have an account?
+        <a href="{{ route('login') }}" class="font-semibold text-brand-600 hover:text-brand-700">Log in</a>
+    </p>
 </x-guest-layout>
