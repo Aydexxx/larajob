@@ -82,6 +82,14 @@
                 <!-- Right: candidate info + status actions -->
                 <aside class="lg:w-72 shrink-0 space-y-5">
 
+                    {{-- AI match breakdown — hidden entirely when AI is disabled --}}
+                    @if ($matchEnabled)
+                        <x-match-card
+                            :endpoint="route('employer.applications.match', $application)"
+                            :result="$matchInitial"
+                            :incomplete="$matchIncomplete" />
+                    @endif
+
                     <!-- Candidate card -->
                     <div class="bg-white border border-gray-200 rounded-xl p-5">
                         <h3 class="font-semibold text-gray-900 text-sm mb-4">Candidate</h3>

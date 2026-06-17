@@ -20,6 +20,77 @@
                             <x-input-error :messages="$errors->get('title')" class="mt-2" />
                         </div>
 
+                        @if ($aiAssistEnabled)
+                            <div class="rounded-lg border border-indigo-100 bg-indigo-50/60 p-4"
+                                x-data="{
+                                    show: false,
+                                    bulletsText: '',
+                                    generating: false,
+                                    failed: false,
+                                    justGenerated: false,
+                                    generate() {
+                                        const title = document.getElementById('title').value.trim();
+                                        const bullets = this.bulletsText.split('\n').map((b) => b.trim()).filter(Boolean);
+                                        if (! title || bullets.length === 0) {
+                                            this.failed = true;
+                                            return;
+                                        }
+                                        this.generating = true;
+                                        this.failed = false;
+                                        fetch('{{ route('employer.jobs.draft-description') }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                Accept: 'application/json',
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                            },
+                                            body: JSON.stringify({ title, bullets }),
+                                        })
+                                            .then((r) => (r.ok || r.status === 502 ? r.json() : Promise.reject(r)))
+                                            .then((data) => {
+                                                if (data.status === 'ok' && data.draft) {
+                                                    document.getElementById('description').value = data.draft.description;
+                                                    document.getElementById('requirements').value = data.draft.requirements;
+                                                    this.justGenerated = true;
+                                                    this.show = false;
+                                                } else {
+                                                    this.failed = true;
+                                                }
+                                            })
+                                            .catch(() => { this.failed = true; })
+                                            .finally(() => { this.generating = false; });
+                                    },
+                                }">
+                                <button type="button" @click="show = !show"
+                                    class="text-sm font-medium text-indigo-700 hover:text-indigo-800">
+                                    <span x-show="!show">Generate description with AI</span>
+                                    <span x-show="show" x-cloak>Hide AI assistant</span>
+                                </button>
+
+                                <div x-show="show" x-cloak class="mt-3 space-y-3">
+                                    <p class="text-xs text-gray-600">
+                                        Add a few bullet points about the role (one per line) — we'll draft a description and requirements list using the title above for you to edit.
+                                    </p>
+                                    <textarea x-model="bulletsText" rows="4"
+                                        placeholder="e.g.&#10;3+ years building Laravel APIs&#10;Comfortable owning a feature end to end&#10;Remote-friendly, async-first team"
+                                        class="block w-full text-sm border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"></textarea>
+                                    <div class="flex items-center gap-3">
+                                        <button type="button" @click="generate()" :disabled="generating"
+                                            class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                            <span x-text="generating ? 'Generating…' : 'Generate'"></span>
+                                        </button>
+                                        <template x-if="failed">
+                                            <span class="text-xs text-red-600">Add a title and at least one bullet point, then try again.</span>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <template x-if="justGenerated">
+                                    <p class="mt-2 text-xs text-indigo-700">AI-generated draft — review and edit before posting.</p>
+                                </template>
+                            </div>
+                        @endif
+
                         <!-- Description -->
                         <div>
                             <x-input-label for="description" :value="__('Description')" />

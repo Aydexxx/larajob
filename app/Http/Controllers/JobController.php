@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreJobRequest;
 use App\Http\Requests\UpdateJobRequest;
 use App\Models\Job;
+use App\Services\AI\JobDescriptionDraftService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -31,7 +32,7 @@ class JobController extends Controller
         return view('employer.jobs.index', compact('jobs', 'company'));
     }
 
-    public function create(): View|RedirectResponse
+    public function create(JobDescriptionDraftService $drafts): View|RedirectResponse
     {
         $company = $this->employerCompany();
 
@@ -40,7 +41,10 @@ class JobController extends Controller
                 ->with('info', 'Please create a company profile before posting jobs.');
         }
 
-        return view('employer.jobs.create');
+        // "Generate description" is hidden entirely when the AI layer is off.
+        $aiAssistEnabled = $drafts->isAvailable();
+
+        return view('employer.jobs.create', compact('aiAssistEnabled'));
     }
 
     public function store(StoreJobRequest $request): RedirectResponse
@@ -53,9 +57,9 @@ class JobController extends Controller
 
         $company->jobs()->create([
             ...$request->validated(),
-            'slug'      => Str::slug($request->input('title')),
+            'slug' => Str::slug($request->input('title')),
             'is_remote' => $request->boolean('is_remote'),
-            'status'    => 'active',
+            'status' => 'active',
         ]);
 
         return redirect()->route('employer.jobs.index')
@@ -75,7 +79,7 @@ class JobController extends Controller
 
         $job->update([
             ...$request->validated(),
-            'slug'      => Str::slug($request->input('title')),
+            'slug' => Str::slug($request->input('title')),
             'is_remote' => $request->boolean('is_remote'),
         ]);
 

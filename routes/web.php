@@ -1,15 +1,18 @@
 <?php
 
-use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminCompanyController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminJobController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\CandidateCoverLetterDraftController;
+use App\Http\Controllers\CandidateMatchController;
 use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\EmployerApplicationController;
 use App\Http\Controllers\EmployerController;
+use App\Http\Controllers\EmployerJobDescriptionDraftController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
@@ -42,6 +45,14 @@ Route::middleware(['auth', 'role:candidate'])->prefix('candidate')->name('candid
     // Applications
     Route::get('/applications/create', [ApplicationController::class, 'create'])->name('applications.create');
     Route::resource('/applications', ApplicationController::class)->only(['store', 'index', 'show', 'destroy']);
+
+    // AI cover-letter draft for the apply form (async JSON; only meaningful when AI is enabled)
+    Route::post('/applications/draft-cover-letter', [CandidateCoverLetterDraftController::class, 'store'])
+        ->middleware('throttle:ai-draft')
+        ->name('applications.draft-cover-letter');
+
+    // AI match score for a job (async JSON; only meaningful when AI is enabled)
+    Route::get('/jobs/{job:slug}/match', [CandidateMatchController::class, 'show'])->name('jobs.match');
 });
 
 // Employer routes
@@ -58,8 +69,14 @@ Route::middleware(['auth', 'role:employer'])->prefix('employer')->name('employer
     Route::resource('/jobs', JobController::class)->except(['show']);
     Route::patch('/jobs/{job}/toggle-status', [JobController::class, 'toggleStatus'])->name('jobs.toggle-status');
 
+    // AI description draft for the job create form (async JSON; only meaningful when AI is enabled)
+    Route::post('/jobs/draft-description', [EmployerJobDescriptionDraftController::class, 'store'])
+        ->middleware('throttle:ai-draft')
+        ->name('jobs.draft-description');
+
     // Application management
     Route::get('/applications', [EmployerApplicationController::class, 'index'])->name('applications.index');
+    Route::get('/applications/{application}/match', [EmployerApplicationController::class, 'match'])->name('applications.match');
     Route::get('/applications/{application}', [EmployerApplicationController::class, 'show'])->name('applications.show');
     Route::patch('/applications/{application}/status', [EmployerApplicationController::class, 'updateStatus'])->name('applications.update-status');
     Route::get('/applications/{application}/resume', [EmployerApplicationController::class, 'downloadResume'])->name('applications.resume');

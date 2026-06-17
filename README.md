@@ -8,9 +8,10 @@ A full-featured global job board built with Laravel 13 — portfolio-quality dem
 - **Employer tools** — Company profile management; full job listing CRUD with status control (active / draft / closed)
 - **Candidate tools** — Browse and search open positions; one-click apply with cover letter; application tracking dashboard; withdraw pending applications
 - **Public job board** — Live search by keyword, employment type, and remote flag; company directory; individual job detail pages
+- **AI features (optional, config-gated)** — Semantic job search, "similar jobs", candidate↔job match scores with narrative, and AI-assisted cover-letter / job-description drafting. The entire layer is **off by default** (`AI_PROVIDER=none`) and the app is fully functional without it; enable it in minutes with free local **Ollama** or with **OpenAI**. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - **Email notifications** — Queued notifications when a candidate applies (employer notified) and when an employer updates a status (candidate notified)
 - **Admin panel** — View all users, companies, and applications; manage role assignments
-- **60-test suite** — PHPUnit tests covering auth flows, authorization boundaries, employer CRUD, candidate pipeline, and public browsing rules
+- **144-test suite** — PHPUnit tests covering auth flows, authorization boundaries, employer CRUD, candidate pipeline, public browsing rules, and the AI layer in **both** its enabled (Prism faked — zero real API calls) and disabled/degraded states
 
 ## Screenshots
 
@@ -26,6 +27,7 @@ A full-featured global job board built with Laravel 13 — portfolio-quality dem
 | Templating | Blade |
 | Frontend | Alpine.js 3, Tailwind CSS 3 |
 | Build tool | Vite 8 |
+| AI (optional) | Prism (`prism-php/prism`) → OpenAI or Ollama; disabled by default |
 | Tests | PHPUnit 12 |
 | Code style | Laravel Pint (PSR-12) |
 
@@ -77,6 +79,25 @@ To run the full dev environment (server + queue + Vite + log tail) in one comman
 
 ```bash
 composer dev
+```
+
+### Enabling AI (optional)
+
+The AI features are **off by default** — the app runs fully without any AI
+configuration. To switch them on in a few minutes with free local **Ollama**
+or with **OpenAI**, follow [docs/ARCHITECTURE.md → Enabling the AI layer](docs/ARCHITECTURE.md#enabling-the-ai-layer).
+In short:
+
+```dotenv
+# .env — pick ONE
+AI_PROVIDER=ollama      # free, local; also set OLLAMA_URL=http://localhost:11434
+# AI_PROVIDER=openai    # set OPENAI_API_KEY=sk-...
+```
+
+```bash
+php artisan config:clear
+php artisan jobs:embed                      # backfill embeddings for existing jobs
+php artisan queue:work --stop-when-empty    # process the embedding queue
 ```
 
 ## Running Tests
@@ -158,7 +179,8 @@ User (role: admin | employer | candidate)
 | **Notifications** | `NewApplicationReceived` (to employer) and `ApplicationStatusChanged` (to candidate) — both implement `ShouldQueue` and use the `mail` channel |
 | **Middleware** | `CheckRole` (alias: `role`) guards role-specific route groups; returns 403 on a role mismatch |
 | **Factories / Seeders** | Full factory coverage (`CompanyFactory`, `JobFactory`, `ApplicationFactory`, `CandidateProfileFactory`) with states (`active()`, `remote()`, `pending()`, `accepted()`, etc.); one `migrate:fresh --seed` populates the entire platform |
-| **Tests** | 60 PHPUnit tests, 156 assertions; `RefreshDatabase` + `Notification::fake()` for isolation; authorization boundary tests deliberately send valid payloads to distinguish a 403 (policy) from a 422 (validation) |
+| **Tests** | 144 PHPUnit tests, 385 assertions; `RefreshDatabase` + `Notification::fake()` for isolation; authorization boundary tests deliberately send valid payloads to distinguish a 403 (policy) from a 422 (validation); the AI layer is tested both enabled (with Prism's fake — no real API calls) and disabled |
+| **AI layer (optional)** | Provider-agnostic `AIService` behind an `AIProvider` contract (Prism → OpenAI/Ollama), queue-driven embeddings, cosine-similarity `VectorSearch`, and cached hybrid match scoring — all gated by `config('ai.enabled')` and off by default. Full write-up in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
 
 ## License
 

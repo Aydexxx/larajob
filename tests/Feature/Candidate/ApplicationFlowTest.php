@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Candidate;
 
+use App\Jobs\ComputeApplicationMatch;
 use App\Models\Application;
 use App\Models\Company;
 use App\Models\Job;
@@ -9,6 +10,7 @@ use App\Models\User;
 use App\Notifications\NewApplicationReceived;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class ApplicationFlowTest extends TestCase
@@ -46,6 +48,22 @@ class ApplicationFlowTest extends TestCase
         ]);
 
         Notification::assertSentTo($employer, NewApplicationReceived::class);
+    }
+
+    public function test_applying_dispatches_the_match_scoring_job(): void
+    {
+        Notification::fake();
+        Queue::fake();
+
+        $job = $this->activeJob();
+        $candidate = User::factory()->candidate()->create();
+
+        $this->actingAs($candidate)->post(route('candidate.applications.store'), [
+            'job_id' => $job->id,
+            'cover_letter' => self::COVER_LETTER,
+        ])->assertRedirect(route('candidate.applications.index'));
+
+        Queue::assertPushed(ComputeApplicationMatch::class);
     }
 
     public function test_a_candidate_cannot_apply_to_the_same_job_twice(): void

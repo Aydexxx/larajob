@@ -65,6 +65,17 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // Dedicated channel for the AI layer (App\Services\AI\AIService).
+        // Every embed/chat call is logged here with provider, model,
+        // latency and token usage, kept separate from the app log.
+        'ai' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/ai.log'),
+            'level' => env('AI_LOG_LEVEL', 'debug'),
+            'days' => env('AI_LOG_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
         'daily' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),

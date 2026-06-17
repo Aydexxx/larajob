@@ -50,14 +50,76 @@
                         @enderror
 
                         <!-- Cover letter -->
-                        <div>
-                            <x-input-label for="cover_letter" :value="__('Cover Letter')" />
+                        <div
+                            @if ($aiAssistEnabled)
+                                x-data="{
+                                    generating: false,
+                                    failed: false,
+                                    incomplete: false,
+                                    justGenerated: false,
+                                    generate() {
+                                        this.generating = true;
+                                        this.failed = false;
+                                        this.incomplete = false;
+                                        fetch('{{ route('candidate.applications.draft-cover-letter') }}', {
+                                            method: 'POST',
+                                            headers: {
+                                                Accept: 'application/json',
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content,
+                                            },
+                                            body: JSON.stringify({ job_id: {{ $job->id }} }),
+                                        })
+                                            .then((r) => (r.ok || r.status === 502 ? r.json() : Promise.reject(r)))
+                                            .then((data) => {
+                                                if (data.status === 'incomplete_profile') {
+                                                    this.incomplete = true;
+                                                } else if (data.status === 'ok' && data.draft) {
+                                                    document.getElementById('cover_letter').value = data.draft;
+                                                    this.justGenerated = true;
+                                                } else {
+                                                    this.failed = true;
+                                                }
+                                            })
+                                            .catch(() => { this.failed = true; })
+                                            .finally(() => { this.generating = false; });
+                                    },
+                                }"
+                            @endif
+                        >
+                            <div class="flex items-center justify-between gap-2">
+                                <x-input-label for="cover_letter" :value="__('Cover Letter')" />
+                                @if ($aiAssistEnabled)
+                                    <button type="button" @click="generate()" :disabled="generating"
+                                        class="text-xs font-medium text-indigo-600 hover:text-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <span x-text="generating ? 'Generating…' : 'Draft with AI'"></span>
+                                    </button>
+                                @endif
+                            </div>
                             <p class="text-xs text-gray-500 mt-0.5 mb-1">
                                 Min 50 characters. Tell the employer why you're a great fit.
                             </p>
                             <textarea id="cover_letter" name="cover_letter" rows="8"
+                                @if ($aiAssistEnabled) @input="justGenerated = false" @endif
                                 class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
                                 required minlength="50">{{ old('cover_letter') }}</textarea>
+                            @if ($aiAssistEnabled)
+                                <template x-if="incomplete">
+                                    <p class="text-xs text-amber-600 mt-1">
+                                        Add a headline, bio, or skills to your profile to get a tailored draft.
+                                    </p>
+                                </template>
+                                <template x-if="failed">
+                                    <p class="text-xs text-red-600 mt-1">
+                                        Couldn't generate a draft right now. Please try again or write your own.
+                                    </p>
+                                </template>
+                                <template x-if="justGenerated">
+                                    <p class="text-xs text-indigo-600 mt-1">
+                                        AI-generated draft — review and edit before submitting.
+                                    </p>
+                                </template>
+                            @endif
                             <x-input-error :messages="$errors->get('cover_letter')" class="mt-2" />
                         </div>
 

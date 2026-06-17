@@ -61,7 +61,27 @@
                     'accepted' => 'bg-green-100 text-green-800',
                     'rejected' => 'bg-red-100 text-red-800',
                 ];
+                $matchColors = [
+                    'high'   => 'bg-green-100 text-green-700',
+                    'medium' => 'bg-yellow-100 text-yellow-800',
+                    'low'    => 'bg-gray-100 text-gray-600',
+                ];
             @endphp
+
+            {{-- Sort toggle — only when AI match scoring is available --}}
+            @if ($aiEnabled)
+                <div class="flex items-center justify-end gap-2 mb-3 text-sm">
+                    <span class="text-gray-500">Sort:</span>
+                    <a href="{{ route('employer.applications.index', array_merge(request()->except(['sort', 'page']))) }}"
+                        class="px-3 py-1 rounded-full border {{ $sortByMatch ? 'border-gray-200 text-gray-500 hover:bg-gray-50' : 'border-indigo-300 bg-indigo-50 text-indigo-700 font-medium' }}">
+                        Most recent
+                    </a>
+                    <a href="{{ route('employer.applications.index', array_merge(request()->except('page'), ['sort' => 'match'])) }}"
+                        class="px-3 py-1 rounded-full border {{ $sortByMatch ? 'border-indigo-300 bg-indigo-50 text-indigo-700 font-medium' : 'border-gray-200 text-gray-500 hover:bg-gray-50' }}">
+                        Best match
+                    </a>
+                </div>
+            @endif
 
             <!-- Table -->
             <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
@@ -86,6 +106,20 @@
                                 @endif
                             </p>
                         </div>
+
+                        <!-- Match score -->
+                        @if ($aiEnabled)
+                            <div class="shrink-0 w-20 text-center hidden sm:block">
+                                @if ($application->match_percentage !== null)
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                                        {{ $matchColors[$application->match_result?->tier()] ?? 'bg-gray-100 text-gray-600' }}">
+                                        {{ $application->match_percentage }}% match
+                                    </span>
+                                @else
+                                    <span class="text-xs text-gray-300" title="Score not computed yet">—</span>
+                                @endif
+                            </div>
+                        @endif
 
                         <!-- Date -->
                         <p class="text-xs text-gray-400 shrink-0 hidden sm:block">

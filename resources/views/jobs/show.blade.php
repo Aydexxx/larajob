@@ -67,6 +67,15 @@
 
                 <!-- Sidebar -->
                 <aside class="lg:w-80 shrink-0 space-y-5">
+                    {{-- AI match score — candidates only, hidden entirely when AI is disabled --}}
+                    @if ($matchEnabled)
+                        <x-match-card
+                            :endpoint="route('candidate.jobs.match', $job)"
+                            :result="$matchInitial"
+                            :incomplete="$matchIncomplete"
+                            :profile-url="route('candidate.profile.edit')" />
+                    @endif
+
                     <!-- Apply card -->
                     <x-ui.card>
                         <h3 class="font-bold text-gray-900 mb-4">Apply for this role</h3>
@@ -130,6 +139,27 @@
                                         Visit website &rarr;
                                     </a>
                                 @endif
+                            </div>
+                        </x-ui.card>
+                    @endif
+
+                    {{-- Similar jobs (semantic match) — hidden entirely when AI is disabled --}}
+                    @if ($similarJobs->isNotEmpty())
+                        <x-ui.card>
+                            <div class="flex items-center gap-1.5 mb-4">
+                                <h3 class="font-bold text-gray-900">Similar jobs</h3>
+                                <x-ui.badge color="brand" size="sm">Smart match</x-ui.badge>
+                            </div>
+
+                            <div class="space-y-3">
+                                @foreach ($similarJobs as $similarJob)
+                                    <a href="{{ route('jobs.show', $similarJob) }}" class="block group">
+                                        <p class="text-sm font-semibold text-gray-900 group-hover:text-brand-700 transition-colors truncate">
+                                            {{ $similarJob->title }}
+                                        </p>
+                                        <p class="text-xs text-gray-500 truncate">{{ $similarJob->company?->name }} &middot; {{ $similarJob->location }}</p>
+                                    </a>
+                                @endforeach
                             </div>
                         </x-ui.card>
                     @endif

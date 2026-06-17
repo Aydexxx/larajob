@@ -3,16 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreApplicationRequest;
+use App\Jobs\ComputeApplicationMatch;
 use App\Models\Application;
 use App\Models\Job;
 use App\Notifications\NewApplicationReceived;
+use App\Services\AI\CoverLetterDraftService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class ApplicationController extends Controller
 {
-    public function create(): View|RedirectResponse
+    public function create(CoverLetterDraftService $drafts): View|RedirectResponse
     {
         $job = Job::active()->findOrFail(request()->integer('job_id'));
 
@@ -27,7 +29,10 @@ class ApplicationController extends Controller
 
         $job->load('company');
 
-        return view('candidate.applications.create', compact('job'));
+        // "Draft with AI" is hidden entirely when the AI layer is off.
+        $aiAssistEnabled = $drafts->isAvailable();
+
+        return view('candidate.applications.create', compact('job', 'aiAssistEnabled'));
     }
 
     public function store(StoreApplicationRequest $request): RedirectResponse
@@ -49,6 +54,10 @@ class ApplicationController extends Controller
         if ($job?->company?->user) {
             $job->company->user->notify(new NewApplicationReceived($application, $job));
         }
+
+        // Warm the match-score cache off the request cycle so the employer's
+        // applications list can show and sort by it without a live AI call.
+        ComputeApplicationMatch::dispatch($application->id);
 
         return redirect()->route('candidate.applications.index')
             ->with('success', 'Application submitted successfully.');

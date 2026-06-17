@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Observers\JobObserver;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,9 +27,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'status',
     'expires_at',
 ])]
+#[ObservedBy(JobObserver::class)]
 class Job extends Model
 {
     use HasFactory;
+
+    /**
+     * Fields that feed the embedding input. Changing any of these on update
+     * should trigger re-embedding; see JobObserver.
+     */
+    public const EMBEDDABLE_FIELDS = ['title', 'description', 'requirements', 'location', 'type'];
 
     /**
      * Get the attributes that should be cast.
@@ -41,6 +50,8 @@ class Job extends Model
             'salary_max' => 'integer',
             'is_remote' => 'boolean',
             'expires_at' => 'datetime',
+            'embedding' => 'array',
+            'embedded_at' => 'datetime',
         ];
     }
 
@@ -90,6 +101,15 @@ class Job extends Model
         }
 
         return $query->where('status', $status);
+    }
+
+    /**
+     * Restrict to jobs that have a generated embedding. Used to build the
+     * candidate set for semantic ranking without loading the whole table.
+     */
+    public function scopeHasEmbedding(Builder $query): Builder
+    {
+        return $query->whereNotNull('embedding');
     }
 
     /**
