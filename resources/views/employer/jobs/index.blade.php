@@ -5,7 +5,7 @@
                 {{ __('My Job Listings') }}
             </h2>
             <a href="{{ route('employer.jobs.create') }}"
-                class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700">
+                class="inline-flex items-center px-4 py-2 bg-brand-600 text-white text-sm font-medium rounded-md hover:bg-brand-700">
                 {{ __('Post New Job') }}
             </a>
         </div>
@@ -41,7 +41,7 @@
                     </div>
                 </div>
                 <a href="{{ route('employer.company.edit') }}"
-                    class="text-sm text-indigo-600 hover:text-indigo-800 underline">
+                    class="text-sm text-brand-600 hover:text-brand-800 underline">
                     {{ __('Edit Company') }}
                 </a>
             </div>
@@ -88,9 +88,15 @@
                             <!-- Application count badge -->
                             @if ($job->applications_count > 0)
                                 <a href="{{ route('employer.applications.index', ['job_id' => $job->id]) }}"
-                                    class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md bg-indigo-50 text-indigo-700 font-medium hover:bg-indigo-100">
+                                    class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md bg-brand-50 text-brand-700 font-medium hover:bg-brand-100">
                                     {{ $job->applications_count }}
                                     {{ Str::plural('applicant', $job->applications_count) }}
+                                </a>
+
+                                <!-- Ranked applicants (AI match) -->
+                                <a href="{{ route('employer.jobs.applicants', $job) }}"
+                                    class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md border border-brand-300 text-brand-600 font-medium hover:bg-brand-50">
+                                    {{ __('Rank') }}
                                 </a>
                             @else
                                 <span class="text-xs text-gray-400 px-2.5 py-1.5">0 applicants</span>
@@ -111,7 +117,7 @@
 
                             <!-- Edit -->
                             <a href="{{ route('employer.jobs.edit', $job) }}"
-                                class="text-xs px-3 py-1.5 rounded-md border border-indigo-300 text-indigo-600 font-medium hover:bg-indigo-50">
+                                class="text-xs px-3 py-1.5 rounded-md border border-brand-300 text-brand-600 font-medium hover:bg-brand-50">
                                 {{ __('Edit') }}
                             </a>
 
@@ -128,13 +134,14 @@
                         </div>
                     </div>
                 @empty
-                    <div class="p-8 text-center text-gray-500">
-                        <p class="text-sm">{{ __('No job listings yet.') }}</p>
-                        <a href="{{ route('employer.jobs.create') }}"
-                            class="mt-2 inline-block text-sm text-indigo-600 hover:underline">
-                            {{ __('Post your first job') }}
-                        </a>
-                    </div>
+                    <x-ui.empty-state
+                        context="jobs"
+                        title="No job listings yet"
+                        description="Post your first role to start receiving applications from candidates on LaraJob.">
+                        <x-slot name="action">
+                            <x-ui.button :href="route('employer.jobs.create')">Post your first job</x-ui.button>
+                        </x-slot>
+                    </x-ui.empty-state>
                 @endforelse
             </div>
 

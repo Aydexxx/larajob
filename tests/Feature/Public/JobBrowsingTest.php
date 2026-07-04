@@ -112,4 +112,24 @@ class JobBrowsingTest extends TestCase
 
         $this->get(route('jobs.show', $job))->assertNotFound();
     }
+
+    // --- Empty states: a genuinely empty board vs no results for a filter ---
+
+    public function test_a_genuinely_empty_board_shows_a_no_jobs_posted_yet_message(): void
+    {
+        $this->get(route('jobs.index'))
+            ->assertOk()
+            ->assertSee('No jobs posted yet')
+            ->assertDontSee('No jobs match your search');
+    }
+
+    public function test_no_results_for_a_search_on_a_non_empty_board_shows_a_filter_specific_message(): void
+    {
+        Job::factory()->active()->for($this->company())->create(['title' => 'Existing Role']);
+
+        $this->get(route('jobs.index', ['search' => 'Nonexistent Title Xyz']))
+            ->assertOk()
+            ->assertSee('No jobs match your search')
+            ->assertDontSee('No jobs posted yet');
+    }
 }

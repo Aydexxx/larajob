@@ -8,9 +8,11 @@ use App\Models\Application;
 use App\Models\Job;
 use App\Notifications\NewApplicationReceived;
 use App\Services\AI\CoverLetterDraftService;
+use App\Services\Resume\ResumeStorage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class ApplicationController extends Controller
 {
@@ -35,12 +37,16 @@ class ApplicationController extends Controller
         return view('candidate.applications.create', compact('job', 'aiAssistEnabled'));
     }
 
-    public function store(StoreApplicationRequest $request): RedirectResponse
+    public function store(StoreApplicationRequest $request, ResumeStorage $resumes): RedirectResponse
     {
-        $resumePath = null;
-        if ($request->hasFile('resume')) {
-            $resumePath = $request->file('resume')->store('resumes', 'public');
-        }
+        // Use the freshly uploaded file if there is one; otherwise fall back
+        // to a snapshot of the candidate's profile resume — matching what the
+        // apply form promises ("your profile resume will be used"). copy()
+        // gives the application its own immutable copy, so later replacing the
+        // profile resume never breaks this submission.
+        $resumePath = $request->hasFile('resume')
+            ? $resumes->store($request->file('resume'))
+            : $resumes->copy(Auth::user()->candidateProfile?->resume_path);
 
         $application = Application::create([
             'job_id' => $request->validated('job_id'),
@@ -81,6 +87,20 @@ class ApplicationController extends Controller
         $application->load('job.company');
 
         return view('candidate.applications.show', compact('application'));
+    }
+
+    /**
+     * View the resume submitted with the candidate's own application. Served
+     * via a signed, expiring URL (S3/R2) or an app-streamed response (local)
+     * so the file is never publicly reachable.
+     */
+    public function resume(Application $application, ResumeStorage $resumes): Response
+    {
+        $this->authorize('view', $application);
+
+        abort_unless(filled($application->resume_path), 404);
+
+        return $resumes->view($application->resume_path, 'resume.pdf');
     }
 
     public function destroy(Application $application): RedirectResponse

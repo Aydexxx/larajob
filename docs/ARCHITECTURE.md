@@ -54,6 +54,9 @@ Standard Laravel 13 layout, plus a dedicated AI service layer:
 - Use Eloquent relationships (`hasMany`/`belongsTo`) instead of manual joins.
 - Define `fillable` and `casts()` on every model.
 - Migrations should be reversible (`down()` drops what `up()` creates).
+- Frontend follows the design tokens in [`docs/DESIGN.md`](DESIGN.md) — use
+  `brand-*` (never `indigo-*`), the `<x-ui.*>` component library, and the shadow
+  scale rather than one-off values.
 
 ## Email Notifications
 
@@ -228,11 +231,48 @@ more than good enough for this workload:
 
 Cost stays tiny because the design minimizes calls: job embeddings are
 generated **once** per create/edit (not per view), match narratives and query
-embeddings are **cached** (24 h / 5 min), and the draft generators are
-**rate-limited** to 5/min per user. A board with a few thousand jobs embeds
-for well under a dollar; day-to-day search/match traffic is mostly cache
-hits. You can swap in larger models (`gpt-4o`, `text-embedding-3-large`)
-purely via the env overrides above if you want higher quality.
+embeddings are **cached** (24 h / 5 min), and every model call passes through
+the cost controls below. A board with a few thousand jobs embeds for well
+under a dollar; day-to-day search/match traffic is mostly cache hits. You can
+swap in larger models (`gpt-4o`, `text-embedding-3-large`) purely via the env
+overrides above if you want higher quality.
+
+### Cost & abuse controls
+
+Now that real users trigger embeddings, CV parsing, match explanations and job
+chat, four layers keep spend bounded — all in `config/ai.php` and
+`App\Services\AI\AICostGuard`. Every layer degrades to the existing
+none-provider fallback; nothing errors the user out of a page.
+
+1. **Caching (first line of defense).** Match explanations and per-candidate
+   summaries are cached by a `(profile embedding version, job version, models)`
+   key, so repeat views never re-hit the API — only the first computation for a
+   given pair spends. Editing unrelated profile fields (phone, LinkedIn) does
+   not invalidate. Verified by tests (`AICostControlTest`, `MatchExplainTest`).
+
+2. **Per-user daily caps** (`ai.limits.*`, enforced by `AICostGuard::allow()`).
+   Once an actor (authenticated user, or IP for the public ask-about-job chat)
+   spends their daily allowance for a feature, that feature quietly drops to its
+   rule-based fallback — rule-based match explanation, template job description,
+   keyword bias scan, a short "limit reached" chat reply — for the rest of the
+   day. Per-minute **burst** limiters (`throttle:ai-ask|ai-draft|ai-explain` in
+   `AppServiceProvider`) sit in front as a second guard.
+
+3. **CV re-parse debounce** (`ai.limits.cv-parse.debounce_minutes`). Re-uploading
+   the exact same resume file (matched by content hash) within the window stores
+   the file but skips a redundant parse; a per-user daily cap
+   (`cv-parse.per_day`) bounds it further. The profile save always succeeds.
+
+4. **Soft global budget** (`AI_DAILY_CALL_BUDGET`). A day-wide ceiling on real
+   model calls across all users. When reached, `AIService::isEnabled()` reports
+   false and **every** feature degrades to its fallback until the counter resets
+   — fail safe, not fail expensive. `0` (default) disables the guard.
+
+**Observability.** Every real call is tagged with a `feature` label at the
+single `AIService` choke point and recorded to per-feature + global daily
+counters (`AICostGuard::record()`), logged to the `ai` channel
+(`storage/logs/ai.log`) as `AI call recorded` with the running `feature_calls_today`
+/ `total_calls_today` tallies — so spend is attributable per feature.
 
 ### After enabling either provider
 

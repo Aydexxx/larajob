@@ -14,7 +14,16 @@
             <div class="flex flex-col lg:flex-row gap-8">
 
                 <!-- Main content -->
-                <article class="flex-1 min-w-0">
+                <article class="flex-1 min-w-0 space-y-6">
+                    {{-- Prominent AI match section — candidates only, hidden when AI is off --}}
+                    @if ($matchEnabled)
+                        <x-match-panel
+                            :endpoint="route('candidate.jobs.match', $job)"
+                            :result="$matchInitial"
+                            :incomplete="$matchIncomplete"
+                            :profile-url="route('candidate.profile.edit')" />
+                    @endif
+
                     <x-ui.card padding="p-7 sm:p-8">
                         <!-- Header -->
                         <div class="flex items-start gap-4 mb-6">
@@ -67,15 +76,6 @@
 
                 <!-- Sidebar -->
                 <aside class="lg:w-80 shrink-0 space-y-5">
-                    {{-- AI match score — candidates only, hidden entirely when AI is disabled --}}
-                    @if ($matchEnabled)
-                        <x-match-card
-                            :endpoint="route('candidate.jobs.match', $job)"
-                            :result="$matchInitial"
-                            :incomplete="$matchIncomplete"
-                            :profile-url="route('candidate.profile.edit')" />
-                    @endif
-
                     <!-- Apply card -->
                     <x-ui.card>
                         <h3 class="font-bold text-gray-900 mb-4">Apply for this role</h3>
@@ -142,6 +142,9 @@
                             </div>
                         </x-ui.card>
                     @endif
+
+                    {{-- Ask about this role: grounded chat over the listing + company profile. Always visible, unlike the AI-only cards below. --}}
+                    <x-ask-about-job :job="$job" />
 
                     {{-- Similar jobs (semantic match) — hidden entirely when AI is disabled --}}
                     @if ($similarJobs->isNotEmpty())

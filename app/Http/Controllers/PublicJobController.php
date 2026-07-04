@@ -17,7 +17,7 @@ class PublicJobController extends Controller
 {
     private const PER_PAGE = 12;
 
-    public function index(Request $request, JobSearchService $jobSearch): View
+    public function index(Request $request, JobSearchService $jobSearch, MatchService $matches): View
     {
         $term = $request->input('search');
 
@@ -37,7 +37,39 @@ class PublicJobController extends Controller
             $isSemanticSearch = false;
         }
 
-        return view('jobs.index', compact('jobs', 'isSemanticSearch'));
+        // Per-card match rings: only for a signed-in candidate whose profile
+        // is scorable and embedded, and only when AI is on. Scores are the
+        // deterministic, cached, LLM-free value — so scoring a page of cards
+        // costs nothing. Keyed by job id for the view to look up.
+        $matchScores = $this->matchScoresFor($jobs->getCollection(), $matches);
+        $showMatch = $matchScores !== null;
+
+        // Distinguishes "the whole board is empty" from "no results for
+        // your search/filters" so the empty state never tells a visitor to
+        // "adjust their filters" when there is nothing posted at all yet.
+        $hasAnyActiveJobs = $jobs->isNotEmpty() || Job::active()->exists();
+
+        return view('jobs.index', compact('jobs', 'isSemanticSearch', 'matchScores', 'showMatch', 'hasAnyActiveJobs'));
+    }
+
+    /**
+     * Score the given jobs for the current candidate, or null when match
+     * rings shouldn't render at all (guest, employer, AI off, or a profile
+     * that can't be matched yet).
+     *
+     * @param  Collection<int, Job>  $jobs
+     * @return array<int, int>|null job id → 0-100 score
+     */
+    private function matchScoresFor(Collection $jobs, MatchService $matches): ?array
+    {
+        $user = Auth::user();
+        $profile = $user?->role === 'candidate' ? $user->candidateProfile : null;
+
+        if (! $matches->isAvailable() || ! $matches->profileIsScorable($profile) || blank($profile->embedding)) {
+            return null;
+        }
+
+        return $jobs->mapWithKeys(fn (Job $job) => [$job->id => $matches->scoreFor($profile, $job)])->all();
     }
 
     public function show(Job $job, JobSearchService $jobSearch, MatchService $matches): View
@@ -59,7 +91,7 @@ class PublicJobController extends Controller
         $matchEnabled = $isCandidate && $matches->isAvailable();
         $matchIncomplete = $matchEnabled && ! $matches->profileIsScorable($profile);
         $matchInitial = ($matchEnabled && ! $matchIncomplete)
-            ? $matches->cached($profile, $job)
+            ? $matches->explainCached($profile, $job)
             : null;
 
         return view('jobs.show', compact(
@@ -76,11 +108,11 @@ class PublicJobController extends Controller
         return $query
             ->when(
                 $request->filled('location'),
-                fn ($q) => $q->where('location', 'like', '%'.$request->input('location').'%')
+                fn ($q) => $q->whereLike('location', '%'.$request->input('location').'%')
             )
             ->when(
                 $request->filled('company'),
-                fn ($q) => $q->whereHas('company', fn ($c) => $c->where('name', 'like', '%'.$request->input('company').'%'))
+                fn ($q) => $q->whereHas('company', fn ($c) => $c->whereLike('name', '%'.$request->input('company').'%'))
             )
             ->when(
                 $request->filled('types'),

@@ -3,26 +3,31 @@ import forms from '@tailwindcss/forms';
 
 /**
  * LaraJob design tokens.
- * `brand` is the primary identity colour (a refined indigo-violet). We also
- * alias Tailwind's default `indigo` to the same scale so every legacy
- * `indigo-*` utility already in the app adopts the brand automatically —
+ *
+ * `brand` is our signature colour — a deep, confident teal, deliberately
+ * chosen over the default indigo/violet every other job board reaches for.
+ * It doubles as the "strong match" colour in the AI match ring, so the
+ * identity and the product's core idea (great matches) are the same hue.
+ *
+ * We alias Tailwind's default `indigo` to this same scale, so every legacy
+ * `indigo-*` utility already in the app adopts the signature automatically —
  * one source of truth, zero drift.
  */
 const brand = {
-    50: '#eef2ff',
-    100: '#e0e7ff',
-    200: '#c7d2fe',
-    300: '#a5b4fc',
-    400: '#818cf8',
-    500: '#6366f1',
-    600: '#4f46e5',
-    700: '#4338ca',
-    800: '#3730a3',
-    900: '#312e81',
-    950: '#1e1b4b',
+    50: '#eefdfb',
+    100: '#d3f8f3',
+    200: '#abefe8',
+    300: '#72e1d8',
+    400: '#33c9c0',
+    500: '#14ada6',
+    600: '#0b8c87',
+    700: '#0e6f6c',
+    800: '#125858',
+    900: '#144a4a',
+    950: '#052e2e',
 };
 
-/** Warm accent, used sparingly for highlights (salary, "new", etc.). */
+/** Warm amber accent — the counterweight to teal: salary, "new", mid-match. */
 const accent = {
     50: '#fffbeb',
     100: '#fef3c7',
@@ -63,7 +68,8 @@ export default {
                 soft: '0 1px 2px 0 rgb(16 24 40 / 0.04), 0 1px 3px 0 rgb(16 24 40 / 0.06)',
                 card: '0 1px 3px 0 rgb(16 24 40 / 0.08), 0 1px 2px -1px rgb(16 24 40 / 0.06)',
                 elevated: '0 10px 25px -5px rgb(16 24 40 / 0.10), 0 8px 10px -6px rgb(16 24 40 / 0.06)',
-                glow: '0 10px 40px -12px rgb(79 70 229 / 0.45)',
+                glow: '0 10px 40px -12px rgb(11 140 135 / 0.45)',
+                'glow-lg': '0 18px 60px -14px rgb(11 140 135 / 0.5)',
             },
             keyframes: {
                 'fade-in-up': {

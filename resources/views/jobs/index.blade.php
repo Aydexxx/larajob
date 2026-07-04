@@ -116,16 +116,31 @@
 
                         <div class="space-y-4">
                             @forelse ($jobs as $job)
-                                <x-job-card :job="$job" layout="row" data-reveal style="--reveal-delay: {{ min($loop->index, 8) * 45 }}ms" />
+                                <x-job-card :job="$job" layout="row"
+                                    :match-score="$showMatch ? ($matchScores[$job->id] ?? null) : null"
+                                    :match-endpoint="$showMatch ? route('candidate.jobs.match', $job) : null"
+                                    data-reveal style="--reveal-delay: {{ min($loop->index, 8) * 45 }}ms" />
                             @empty
                                 <x-ui.card>
-                                    <x-ui.empty-state
-                                        title="No jobs match your search"
-                                        description="Try adjusting your filters or search terms to see more results.">
-                                        <x-slot name="action">
-                                            <x-ui.button :href="route('jobs.index')" variant="outline" size="sm">Clear filters</x-ui.button>
-                                        </x-slot>
-                                    </x-ui.empty-state>
+                                    @if ($hasAnyActiveJobs)
+                                        <x-ui.empty-state
+                                            context="search"
+                                            title="No jobs match your search"
+                                            description="Try adjusting your filters or search terms to see more results.">
+                                            <x-slot name="action">
+                                                <x-ui.button :href="route('jobs.index')" variant="outline" size="sm">Clear filters</x-ui.button>
+                                            </x-slot>
+                                        </x-ui.empty-state>
+                                    @else
+                                        <x-ui.empty-state
+                                            context="jobs"
+                                            title="No jobs posted yet"
+                                            description="LaraJob is just getting started — new roles will appear here as soon as employers post them.">
+                                            <x-slot name="action">
+                                                <x-ui.button :href="route('register')" variant="outline" size="sm">Post a job</x-ui.button>
+                                            </x-slot>
+                                        </x-ui.empty-state>
+                                    @endif
                                 </x-ui.card>
                             @endforelse
                         </div>

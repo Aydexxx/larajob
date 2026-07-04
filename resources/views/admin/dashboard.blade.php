@@ -31,14 +31,14 @@
         <div>
             <div class="flex items-center justify-between mb-3">
                 <h2 class="font-semibold text-gray-900">Latest Jobs</h2>
-                <a href="{{ route('admin.jobs.index') }}" class="text-sm text-indigo-600 hover:underline">View all</a>
+                <a href="{{ route('admin.jobs.index') }}" class="text-sm text-brand-600 hover:underline">View all</a>
             </div>
             <x-data-table :headers="['Title', 'Company', 'Status']" :is-empty="$recentJobs->isEmpty()" empty="No jobs yet.">
                 @foreach ($recentJobs as $job)
                     <tr class="hover:bg-gray-50">
                         <td class="px-5 py-3 text-sm">
                             <a href="{{ route('admin.jobs.show', $job) }}"
-                                class="font-medium text-gray-900 hover:text-indigo-600">
+                                class="font-medium text-gray-900 hover:text-brand-600">
                                 {{ $job->title }}
                             </a>
                         </td>
@@ -53,14 +53,14 @@
         <div>
             <div class="flex items-center justify-between mb-3">
                 <h2 class="font-semibold text-gray-900">Latest Registrations</h2>
-                <a href="{{ route('admin.users.index') }}" class="text-sm text-indigo-600 hover:underline">View all</a>
+                <a href="{{ route('admin.users.index') }}" class="text-sm text-brand-600 hover:underline">View all</a>
             </div>
             <x-data-table :headers="['Name', 'Role', 'Joined']" :is-empty="$recentUsers->isEmpty()" empty="No users yet.">
                 @foreach ($recentUsers as $user)
                     <tr class="hover:bg-gray-50">
                         <td class="px-5 py-3 text-sm">
                             <a href="{{ route('admin.users.show', $user) }}"
-                                class="font-medium text-gray-900 hover:text-indigo-600">
+                                class="font-medium text-gray-900 hover:text-brand-600">
                                 {{ $user->name }}
                             </a>
                             <p class="text-xs text-gray-400">{{ $user->email }}</p>

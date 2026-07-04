@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Services\Resume\ResumeStorage;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +23,7 @@ class StoreApplicationRequest extends FormRequest
                 Rule::unique('applications')->where('user_id', $this->user()->id),
             ],
             'cover_letter' => ['required', 'string', 'min:50', 'max:5000'],
-            'resume'       => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
+            'resume'       => ResumeStorage::validationRules(),
         ];
     }
 

@@ -80,6 +80,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Embedding Dimensions
+    |--------------------------------------------------------------------------
+    |
+    | The dimensionality of stored embedding vectors. Must match both the
+    | active embedding model (text-embedding-3-small = 1536) and the
+    | vector(N) columns created by the pgvector migrations — changing this
+    | after embeddings exist requires a re-embed and a column migration.
+    | Stub vectors (AI_PROVIDER=none) are generated at this size too.
+    |
+    */
+
+    'embedding_dimensions' => (int) env('AI_EMBEDDING_DIMENSIONS', 1536),
+
+    /*
+    |--------------------------------------------------------------------------
     | Per-Provider Model Reference
     |--------------------------------------------------------------------------
     |
@@ -89,5 +104,57 @@ return [
     */
 
     'models' => $models,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Soft Global Budget Guard
+    |--------------------------------------------------------------------------
+    |
+    | A fail-safe ceiling on real model calls per calendar day across the
+    | whole application. Once the day's recorded call count reaches this
+    | number, AIService::isEnabled() reports false and every feature silently
+    | degrades to its rule-based / none-provider fallback instead of spending
+    | more — fail safe, not fail expensive. Counting is approximate (cache
+    | backed) and resets daily.
+    |
+    | 0 (the default) disables the guard entirely: unlimited calls.
+    |
+    */
+
+    'budget' => [
+        'daily_call_limit' => (int) env('AI_DAILY_CALL_BUDGET', 0),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Per-User Daily Feature Caps
+    |--------------------------------------------------------------------------
+    |
+    | Maximum real model calls a single actor (authenticated user, or IP for
+    | public endpoints) may trigger per feature per day. Enforced by
+    | AICostGuard; exceeding a cap degrades that feature to its rule-based
+    | fallback for the rest of the day rather than erroring. These are the
+    | daily companion to the per-minute burst limiters in AppServiceProvider.
+    |
+    | The array key is the feature label used everywhere (rate-limit key,
+    | usage counter, and the "feature" tag on each logged AI call). A missing
+    | or 0 `per_day` means that feature is uncapped (e.g. system embeddings).
+    |
+    | cv-parse additionally carries `debounce_minutes`: re-parsing the exact
+    | same resume file within that window is skipped.
+    |
+    */
+
+    'limits' => [
+        'match-explain'   => ['per_day' => (int) env('AI_CAP_MATCH_EXPLAIN', 200)],
+        'ask'             => ['per_day' => (int) env('AI_CAP_ASK', 100)],
+        'cover-letter'    => ['per_day' => (int) env('AI_CAP_COVER_LETTER', 30)],
+        'job-description' => ['per_day' => (int) env('AI_CAP_JOB_DESCRIPTION', 50)],
+        'bias-check'      => ['per_day' => (int) env('AI_CAP_BIAS_CHECK', 100)],
+        'cv-parse'        => [
+            'per_day' => (int) env('AI_CAP_CV_PARSE', 10),
+            'debounce_minutes' => (int) env('AI_CV_PARSE_DEBOUNCE_MINUTES', 10),
+        ],
+    ],
 
 ];

@@ -12,8 +12,25 @@
         @apply text-gray-700 antialiased;
     }
 
-    h1, h2, h3, h4 {
-        @apply tracking-tight text-gray-900;
+    /*
+     * Type scale — one confident, consistent heading rhythm across the app.
+     * These are sensible defaults; an explicit size utility in the markup
+     * (e.g. the hero's `text-6xl`) always wins over them, so pages can scale
+     * up without fighting the base. Headings are tight-tracked and balanced
+     * so titles wrap evenly instead of leaving one orphaned word.
+     */
+    h1, h2, h3, h4, h5, h6 {
+        @apply font-bold tracking-tight text-gray-900;
+        text-wrap: balance;
+    }
+    h1 { @apply text-3xl sm:text-4xl font-extrabold leading-[1.1]; }
+    h2 { @apply text-2xl sm:text-3xl leading-tight; }
+    h3 { @apply text-lg leading-snug; }
+    h4 { @apply text-base; }
+
+    /* Long-form paragraphs read best a touch looser than UI text. */
+    p {
+        text-wrap: pretty;
     }
 
     /* Brand-tinted text selection. */
@@ -45,6 +62,18 @@
 
     [data-navbar].is-scrolled {
         @apply bg-white/95 shadow-soft;
+    }
+
+    /*
+     * Signature "eyebrow" label — a small teal-underlined kicker used above
+     * section titles (For You feed, Match section). Part of the visual voice.
+     */
+    .eyebrow {
+        @apply inline-flex items-center gap-2 text-2xs font-bold uppercase tracking-[0.14em] text-brand-600;
+    }
+    .eyebrow::before {
+        content: '';
+        @apply h-px w-5 bg-brand-500/70;
     }
 }
 
@@ -109,7 +138,7 @@
     z-index: 60;
     transform: scaleX(0);
     transform-origin: left center;
-    background-image: linear-gradient(90deg, #6366f1, #4338ca);
+    background-image: linear-gradient(90deg, #14ada6, #0b8c87);
     opacity: 0;
     pointer-events: none;
 }

@@ -127,10 +127,17 @@
                 <div class="mt-4">
                     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Gaps</p>
                     <ul class="space-y-1">
+                        {{-- Gap items are strings (MatchResult, employer flow) or
+                             {gap, suggestion} objects (MatchExplanation, candidate flow). --}}
                         <template x-for="(item, i) in match.gaps" :key="'g' + i">
                             <li class="flex items-start gap-1.5 text-sm text-gray-700">
                                 <svg class="h-4 w-4 text-gray-400 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/></svg>
-                                <span x-text="item"></span>
+                                <span>
+                                    <span x-text="typeof item === 'string' ? item : item.gap"></span>
+                                    <template x-if="typeof item === 'object' && item.suggestion">
+                                        <span class="block text-xs text-gray-500 mt-0.5" x-text="item.suggestion"></span>
+                                    </template>
+                                </span>
                             </li>
                         </template>
                     </ul>

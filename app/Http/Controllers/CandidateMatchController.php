@@ -10,14 +10,18 @@ use Illuminate\Support\Facades\Auth;
 class CandidateMatchController extends Controller
 {
     /**
-     * Compute (or return cached) match between the signed-in candidate's
-     * profile and a job. Fetched asynchronously by the job page so a slow
-     * LLM call never blocks the page render.
+     * The explained match between the signed-in candidate's profile and a
+     * job. Fetched asynchronously by the job page so a slow LLM call never
+     * blocks the page render.
+     *
+     * Available with EVERY provider setting: with AI enabled the narrative
+     * comes from the model; with AI_PROVIDER=none MatchService degrades to
+     * a rule-based explanation (source: "rules") with no API call — so
+     * this endpoint no longer 404s when AI is off. The result is cached by
+     * (profile embedding version, job version); repeat calls are free.
      */
     public function show(Job $job, MatchService $matches): JsonResponse
     {
-        // The whole match UI is hidden when AI is off; guard the endpoint too.
-        abort_unless($matches->isAvailable(), 404);
         abort_unless($job->status === 'active', 404);
 
         $profile = Auth::user()->candidateProfile;
@@ -28,7 +32,7 @@ class CandidateMatchController extends Controller
 
         return response()->json([
             'status' => 'ok',
-            'match' => $matches->score($profile, $job)->toArray(),
+            'match' => $matches->explain($profile, $job)->toArray(),
         ]);
     }
 }

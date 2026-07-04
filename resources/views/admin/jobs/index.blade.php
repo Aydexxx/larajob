@@ -8,10 +8,10 @@
         class="bg-white border border-gray-200 rounded-xl p-4 mb-6 flex flex-col sm:flex-row gap-3">
         <input type="text" name="search" value="{{ request('search') }}"
             placeholder="Search by title or description"
-            class="flex-1 border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+            class="flex-1 border-gray-300 rounded-lg text-sm focus:ring-brand-500 focus:border-brand-500" />
 
         <select name="status"
-            class="sm:max-w-[180px] border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+            class="sm:max-w-[180px] border-gray-300 rounded-lg text-sm focus:ring-brand-500 focus:border-brand-500">
             <option value="">All statuses</option>
             @foreach (['active' => 'Active', 'closed' => 'Closed', 'draft' => 'Draft'] as $value => $label)
                 <option value="{{ $value }}" {{ request('status') === $value ? 'selected' : '' }}>{{ $label }}</option>
@@ -19,7 +19,7 @@
         </select>
 
         <button type="submit"
-            class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shrink-0">
+            class="px-5 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shrink-0">
             Filter
         </button>
 
@@ -37,7 +37,7 @@
             <tr class="hover:bg-gray-50">
                 <td class="px-5 py-3 text-sm">
                     <a href="{{ route('admin.jobs.show', $job) }}"
-                        class="font-medium text-gray-900 hover:text-indigo-600">{{ $job->title }}</a>
+                        class="font-medium text-gray-900 hover:text-brand-600">{{ $job->title }}</a>
                     <p class="text-xs text-gray-400">{{ str_replace('-', ' ', ucfirst($job->type)) }}</p>
                 </td>
                 <td class="px-5 py-3 text-sm text-gray-500">{{ $job->company?->name ?? '—' }}</td>
@@ -46,7 +46,7 @@
                 <td class="px-5 py-3">
                     <div class="flex items-center gap-2">
                         <a href="{{ route('admin.jobs.show', $job) }}"
-                            class="text-xs px-3 py-1.5 border border-indigo-300 text-indigo-600 rounded-md font-medium hover:bg-indigo-50">
+                            class="text-xs px-3 py-1.5 border border-brand-300 text-brand-600 rounded-md font-medium hover:bg-brand-50">
                             View
                         </a>
 

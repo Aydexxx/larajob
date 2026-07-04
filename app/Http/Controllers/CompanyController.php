@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
+use App\Support\UniqueSlug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class CompanyController extends Controller
@@ -39,7 +40,7 @@ class CompanyController extends Controller
 
         Auth::user()->companies()->create([
             'name'        => $validated['name'],
-            'slug'        => Str::slug($validated['name']),
+            'slug'        => UniqueSlug::generate(Company::class, $validated['name']),
             'description' => $validated['description'] ?? null,
             'website'     => $validated['website'] ?? null,
             'location'    => $validated['location'] ?? null,
@@ -75,7 +76,7 @@ class CompanyController extends Controller
 
         $data = [
             'name'        => $validated['name'],
-            'slug'        => Str::slug($validated['name']),
+            'slug'        => UniqueSlug::generate(Company::class, $validated['name'], $company->id),
             'description' => $validated['description'] ?? null,
             'website'     => $validated['website'] ?? null,
             'location'    => $validated['location'] ?? null,

@@ -4,13 +4,17 @@ namespace Tests\Feature\Candidate;
 
 use App\Jobs\ComputeApplicationMatch;
 use App\Models\Application;
+use App\Models\CandidateProfile;
 use App\Models\Company;
 use App\Models\Job;
 use App\Models\User;
 use App\Notifications\NewApplicationReceived;
+use App\Services\Resume\ResumeStorage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ApplicationFlowTest extends TestCase
@@ -126,6 +130,75 @@ class ApplicationFlowTest extends TestCase
 
         // The application survives because only pending ones can be withdrawn.
         $this->assertDatabaseHas('applications', ['id' => $application->id]);
+    }
+
+    public function test_applying_without_uploading_snapshots_the_profile_resume(): void
+    {
+        Notification::fake();
+        Storage::fake(config('filesystems.resume_disk'));
+
+        $resumes = app(ResumeStorage::class);
+        $profileResumePath = $resumes->store(UploadedFile::fake()->create('cv.pdf', 100, 'application/pdf'));
+
+        $job = $this->activeJob();
+        $candidate = User::factory()->candidate()->create();
+        CandidateProfile::factory()->for($candidate)->create(['resume_path' => $profileResumePath]);
+
+        $this->actingAs($candidate)->post(route('candidate.applications.store'), [
+            'job_id' => $job->id,
+            'cover_letter' => self::COVER_LETTER,
+        ])->assertRedirect(route('candidate.applications.index'));
+
+        $application = Application::where('job_id', $job->id)->where('user_id', $candidate->id)->firstOrFail();
+
+        $this->assertNotNull($application->resume_path, 'The profile resume must be carried onto the application.');
+        $this->assertNotSame($profileResumePath, $application->resume_path, 'The application gets its own copy, not a shared reference.');
+        Storage::disk($resumes->diskName())->assertExists($application->resume_path);
+    }
+
+    public function test_the_application_resume_snapshot_survives_profile_resume_replacement(): void
+    {
+        Notification::fake();
+        Storage::fake(config('filesystems.resume_disk'));
+
+        $resumes = app(ResumeStorage::class);
+        $profileResumePath = $resumes->store(UploadedFile::fake()->create('cv.pdf', 100, 'application/pdf'));
+
+        $job = $this->activeJob();
+        $candidate = User::factory()->candidate()->create();
+        CandidateProfile::factory()->for($candidate)->create(['resume_path' => $profileResumePath]);
+
+        $this->actingAs($candidate)->post(route('candidate.applications.store'), [
+            'job_id' => $job->id,
+            'cover_letter' => self::COVER_LETTER,
+        ]);
+
+        $application = Application::where('job_id', $job->id)->where('user_id', $candidate->id)->firstOrFail();
+
+        // The candidate later replaces their profile resume (the old file is deleted).
+        $resumes->delete($profileResumePath);
+
+        Storage::disk($resumes->diskName())->assertExists($application->resume_path);
+    }
+
+    public function test_applying_without_any_resume_on_file_leaves_the_application_resume_null(): void
+    {
+        Notification::fake();
+        Storage::fake(config('filesystems.resume_disk'));
+
+        $job = $this->activeJob();
+        $candidate = User::factory()->candidate()->create();
+        CandidateProfile::factory()->for($candidate)->create(['resume_path' => null]);
+
+        $this->actingAs($candidate)->post(route('candidate.applications.store'), [
+            'job_id' => $job->id,
+            'cover_letter' => self::COVER_LETTER,
+        ])->assertRedirect(route('candidate.applications.index'));
+
+        $this->assertNull(
+            Application::where('job_id', $job->id)->where('user_id', $candidate->id)->value('resume_path'),
+            'With no uploaded and no profile resume, the application simply has none — no error.'
+        );
     }
 
     public function test_a_candidate_cannot_view_another_candidates_application(): void

@@ -15,8 +15,8 @@
                         alt="{{ $job->company->name }}"
                         class="h-12 w-12 rounded-lg object-cover border border-gray-100 shrink-0" />
                 @else
-                    <div class="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-                        <span class="font-bold text-indigo-600">
+                    <div class="h-12 w-12 rounded-lg bg-brand-100 flex items-center justify-center shrink-0">
+                        <span class="font-bold text-brand-600">
                             {{ mb_strtoupper(mb_substr($job->company?->name ?? '?', 0, 1)) }}
                         </span>
                     </div>
@@ -91,7 +91,7 @@
                                 <x-input-label for="cover_letter" :value="__('Cover Letter')" />
                                 @if ($aiAssistEnabled)
                                     <button type="button" @click="generate()" :disabled="generating"
-                                        class="text-xs font-medium text-indigo-600 hover:text-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        class="text-xs font-medium text-brand-600 hover:text-brand-700 disabled:opacity-50 disabled:cursor-not-allowed">
                                         <span x-text="generating ? 'Generating…' : 'Draft with AI'"></span>
                                     </button>
                                 @endif
@@ -101,7 +101,7 @@
                             </p>
                             <textarea id="cover_letter" name="cover_letter" rows="8"
                                 @if ($aiAssistEnabled) @input="justGenerated = false" @endif
-                                class="block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                class="block w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-md shadow-sm"
                                 required minlength="50">{{ old('cover_letter') }}</textarea>
                             @if ($aiAssistEnabled)
                                 <template x-if="incomplete">
@@ -115,7 +115,7 @@
                                     </p>
                                 </template>
                                 <template x-if="justGenerated">
-                                    <p class="text-xs text-indigo-600 mt-1">
+                                    <p class="text-xs text-brand-600 mt-1">
                                         AI-generated draft — review and edit before submitting.
                                     </p>
                                 </template>
@@ -132,7 +132,7 @@
                                 </p>
                             @endif
                             <input id="resume" name="resume" type="file" accept=".pdf"
-                                class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+                                class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100" />
                             <p class="mt-1 text-xs text-gray-500">PDF only, max 5MB.</p>
                             <x-input-error :messages="$errors->get('resume')" class="mt-2" />
                         </div>

@@ -180,7 +180,7 @@ class AiDisabledDegradationTest extends TestCase
             ->assertDontSee('AI match');
     }
 
-    public function test_all_ai_json_endpoints_are_not_found_when_disabled(): void
+    public function test_ai_json_endpoints_degrade_correctly_when_disabled(): void
     {
         $employer = User::factory()->employer()->create();
         $company = Company::factory()->for($employer)->create();
@@ -188,24 +188,39 @@ class AiDisabledDegradationTest extends TestCase
         $application = Application::factory()->for($job)->for($this->candidate())->create();
         $candidate = $job->applications()->first()->user;
 
-        // Candidate-facing match + cover-letter draft endpoints.
+        // The candidate match endpoint stays up with AI off: it serves the
+        // rule-based explanation (structured overlap, zero API calls)
+        // instead of a model narrative. Purely generative endpoints are 404.
         $this->actingAs($candidate)
             ->getJson(route('candidate.jobs.match', $job))
-            ->assertNotFound();
+            ->assertOk()
+            ->assertJsonPath('match.source', 'rules');
         $this->actingAs($candidate)
             ->postJson(route('candidate.applications.draft-cover-letter'), ['job_id' => $job->id])
             ->assertNotFound();
 
-        // Employer-facing match + description draft endpoints.
+        // Employer-facing match endpoint is purely generative → 404 with AI off.
         $this->actingAs($employer)
             ->getJson(route('employer.applications.match', $application))
             ->assertNotFound();
+
+        // The job-description generator degrades instead of 404ing: with AI
+        // off it assembles a deterministic template from the structured
+        // inputs (no API call), just like the candidate match endpoint.
         $this->actingAs($employer)
             ->postJson(route('employer.jobs.draft-description'), [
                 'title' => 'Backend Engineer',
-                'bullets' => ['Owns the API'],
+                'skills' => ['PHP'],
             ])
-            ->assertNotFound();
+            ->assertOk()
+            ->assertJsonPath('status', 'ok')
+            ->assertJsonPath('draft.source', 'template');
+
+        // The bias check also degrades to its keyword scan rather than 404ing.
+        $this->actingAs($employer)
+            ->postJson(route('employer.jobs.check-bias'), ['text' => 'We want a rockstar.'])
+            ->assertOk()
+            ->assertJsonPath('result.source', 'rules');
     }
 
     public function test_embedding_queue_job_is_a_clean_no_op_when_disabled(): void

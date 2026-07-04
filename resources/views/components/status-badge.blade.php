@@ -13,7 +13,7 @@
         'rejected' => 'bg-red-100 text-red-800',
         // User / company states
         'admin'     => 'bg-purple-100 text-purple-800',
-        'employer'  => 'bg-indigo-100 text-indigo-800',
+        'employer'  => 'bg-brand-100 text-brand-800',
         'candidate' => 'bg-sky-100 text-sky-800',
         'verified'  => 'bg-green-100 text-green-800',
         'unverified'=> 'bg-gray-100 text-gray-600',

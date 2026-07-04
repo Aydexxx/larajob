@@ -46,8 +46,8 @@
                                     alt="{{ $application->job->company->name }}"
                                     class="h-11 w-11 rounded-lg object-cover border border-gray-100 shrink-0" />
                             @else
-                                <div class="h-11 w-11 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-                                    <span class="font-bold text-indigo-600 text-sm">
+                                <div class="h-11 w-11 rounded-lg bg-brand-100 flex items-center justify-center shrink-0">
+                                    <span class="font-bold text-brand-600 text-sm">
                                         {{ mb_strtoupper(mb_substr($application->job?->company?->name ?? '?', 0, 1)) }}
                                     </span>
                                 </div>
@@ -77,7 +77,7 @@
                         <!-- Actions -->
                         <div class="flex items-center gap-2 shrink-0">
                             <a href="{{ route('candidate.applications.show', $application) }}"
-                                class="text-xs px-3 py-1.5 border border-indigo-300 text-indigo-600 rounded-md font-medium hover:bg-indigo-50">
+                                class="text-xs px-3 py-1.5 border border-brand-300 text-brand-600 rounded-md font-medium hover:bg-brand-50">
                                 View
                             </a>
 
@@ -97,13 +97,16 @@
                     </div>
                 </div>
             @empty
-                <div class="bg-white border border-gray-200 rounded-xl p-12 text-center">
-                    <p class="text-gray-500 text-sm mb-4">You haven't applied to any jobs yet.</p>
-                    <a href="{{ route('jobs.index') }}"
-                        class="inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 text-sm">
-                        Browse Jobs
-                    </a>
-                </div>
+                <x-ui.card>
+                    <x-ui.empty-state
+                        context="applications"
+                        title="No applications yet"
+                        description="Once you apply to a role, you'll be able to track its status and hear back from employers right here.">
+                        <x-slot name="action">
+                            <x-ui.button :href="route('jobs.index')">Browse jobs</x-ui.button>
+                        </x-slot>
+                    </x-ui.empty-state>
+                </x-ui.card>
             @endforelse
 
         </div>

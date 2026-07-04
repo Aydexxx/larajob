@@ -50,7 +50,7 @@ class CandidateMatchTest extends TestCase
         ]);
     }
 
-    public function test_match_endpoint_returns_score_when_ai_enabled_and_profile_complete(): void
+    public function test_match_endpoint_returns_explained_match_when_ai_enabled_and_profile_complete(): void
     {
         $this->enableAi();
         $user = $this->candidateWithProfile();
@@ -60,9 +60,30 @@ class CandidateMatchTest extends TestCase
             ->getJson(route('candidate.jobs.match', $job))
             ->assertOk()
             ->assertJsonPath('status', 'ok')
+            ->assertJsonPath('match.score', 100)
             ->assertJsonPath('match.percentage', 100)
+            ->assertJsonPath('match.source', 'model')
             ->assertJsonPath('match.strengths', ['PHP', 'Laravel'])
-            ->assertJsonPath('match.gaps', ['AWS']);
+            // A bare-string gap from the model is tolerated and structured.
+            ->assertJsonPath('match.gaps.0.gap', 'AWS');
+    }
+
+    public function test_match_endpoint_includes_the_deterministic_breakdown(): void
+    {
+        // The breakdown is the same regardless of provider; use the free
+        // rule-based path so the assertion doesn't depend on the model.
+        $user = $this->candidateWithProfile(['skills' => 'PHP, Laravel, MySQL', 'experience_years' => 2]);
+        $job = Job::factory()->active()->for(Company::factory())->create([
+            'requirements' => 'Strong PHP and Laravel skills. At least 5 years of experience.',
+        ]);
+
+        $this->actingAs($user)
+            ->getJson(route('candidate.jobs.match', $job))
+            ->assertOk()
+            ->assertJsonPath('match.breakdown.matchedSkills', ['PHP', 'Laravel'])
+            ->assertJsonPath('match.breakdown.unmatchedSkills', ['MySQL'])
+            ->assertJsonPath('match.breakdown.experience.status', 'unmet')
+            ->assertJsonPath('match.breakdown.experience.label', 'Wants 5+ years — you have 2.');
     }
 
     public function test_match_endpoint_reports_incomplete_profile(): void
@@ -78,15 +99,19 @@ class CandidateMatchTest extends TestCase
             ->assertJsonPath('match', null);
     }
 
-    public function test_match_endpoint_is_not_found_when_ai_disabled(): void
+    public function test_match_endpoint_serves_a_rule_based_explanation_when_ai_disabled(): void
     {
-        // No AI binding → default provider is disabled.
+        // No AI binding → default provider is disabled. Since the explained
+        // match phase, the endpoint no longer 404s: it degrades to the
+        // rule-based explanation built from structured overlap, no API call.
         $user = $this->candidateWithProfile();
         $job = $this->activeJob();
 
         $this->actingAs($user)
             ->getJson(route('candidate.jobs.match', $job))
-            ->assertNotFound();
+            ->assertOk()
+            ->assertJsonPath('status', 'ok')
+            ->assertJsonPath('match.source', 'rules');
     }
 
     public function test_job_page_shows_match_card_for_candidate_when_ai_enabled(): void
@@ -98,7 +123,7 @@ class CandidateMatchTest extends TestCase
         $this->actingAs($user)
             ->get(route('jobs.show', $job))
             ->assertOk()
-            ->assertSee('AI match');
+            ->assertSee('Your match');
     }
 
     public function test_job_page_hides_match_card_when_ai_disabled(): void
@@ -109,7 +134,7 @@ class CandidateMatchTest extends TestCase
         $this->actingAs($user)
             ->get(route('jobs.show', $job))
             ->assertOk()
-            ->assertDontSee('AI match');
+            ->assertDontSee('Your match');
     }
 
     public function test_job_page_hides_match_card_for_non_candidates(): void
@@ -121,6 +146,6 @@ class CandidateMatchTest extends TestCase
         $this->actingAs($employer)
             ->get(route('jobs.show', $job))
             ->assertOk()
-            ->assertDontSee('AI match');
+            ->assertDontSee('Your match');
     }
 }

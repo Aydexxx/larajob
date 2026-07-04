@@ -6,15 +6,15 @@ use App\Models\Application;
 use App\Models\Job;
 use App\Notifications\ApplicationStatusChanged;
 use App\Services\AI\MatchService;
+use App\Services\Resume\ResumeStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class EmployerApplicationController extends Controller
 {
@@ -115,13 +115,13 @@ class EmployerApplicationController extends Controller
         return redirect()->back()->with('success', 'Application status updated.');
     }
 
-    public function downloadResume(Application $application): StreamedResponse
+    public function downloadResume(Application $application, ResumeStorage $resumes): Response
     {
         $this->authorize('viewAsEmployer', $application);
 
-        abort_unless($application->resume_path && Storage::disk('public')->exists($application->resume_path), 404);
+        abort_unless(filled($application->resume_path), 404);
 
-        return Storage::disk('public')->download($application->resume_path);
+        return $resumes->view($application->resume_path, 'resume.pdf');
     }
 
     /**

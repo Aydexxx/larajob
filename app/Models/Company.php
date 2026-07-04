@@ -32,8 +32,8 @@ class Company extends Model
         }
 
         return $query->where(function (Builder $q) use ($term) {
-            $q->where('name', 'like', "%{$term}%")
-                ->orWhere('location', 'like', "%{$term}%");
+            $q->whereLike('name', "%{$term}%")
+                ->orWhereLike('location', "%{$term}%");
         });
     }
 

@@ -13,24 +13,28 @@ use Throwable;
 class EmployerJobDescriptionDraftController extends Controller
 {
     /**
-     * Generate an editable description + requirements draft from a job
-     * title and a few bullet points. Fetched asynchronously from the job
-     * create form; the employer reviews and edits the draft before
-     * posting — this never saves a job listing.
+     * Generate an editable description + requirements draft from structured
+     * inputs (title, seniority, must-have skills, location, salary band).
+     * Fetched asynchronously from the job create form; the employer reviews
+     * and edits the draft before posting — this never saves a job listing.
+     *
+     * Works in every provider state: the service returns a model draft when
+     * AI is enabled and a deterministic template (no API call) when it is
+     * off, so the endpoint never 404s on the AI setting.
      */
     public function store(Request $request, JobDescriptionDraftService $drafts): JsonResponse
     {
-        // The "Generate description" button is hidden when AI is off; guard the endpoint too.
-        abort_unless($drafts->isAvailable(), 404);
-
         // Validated manually (rather than $request->validate()) because the
         // app only renders JSON for validation failures under api/* — see
         // bootstrap/app.php's shouldRenderJsonWhen(). This endpoint is JSON
         // only, so a failure must stay JSON rather than redirect.
         $validator = Validator::make($request->all(), [
             'title' => ['required', 'string', 'max:255'],
-            'bullets' => ['required', 'array', 'min:1'],
-            'bullets.*' => ['string', 'max:300'],
+            'seniority' => ['nullable', 'string', 'max:100'],
+            'skills' => ['nullable', 'array', 'max:20'],
+            'skills.*' => ['string', 'max:100'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'salary' => ['nullable', 'string', 'max:100'],
         ]);
 
         if ($validator->fails()) {
@@ -39,17 +43,19 @@ class EmployerJobDescriptionDraftController extends Controller
 
         $data = $validator->validated();
 
-        $bullets = array_values(array_filter(
-            array_map('trim', $data['bullets']),
-            fn (string $bullet): bool => $bullet !== '',
+        $skills = array_values(array_filter(
+            array_map('trim', $data['skills'] ?? []),
+            fn (string $skill): bool => $skill !== '',
         ));
 
-        if ($bullets === []) {
-            return response()->json(['status' => 'error', 'draft' => null], 422);
-        }
-
         try {
-            $draft = $drafts->draft($data['title'], $bullets);
+            $draft = $drafts->draft([
+                'title' => trim($data['title']),
+                'seniority' => $data['seniority'] ?? null,
+                'skills' => $skills,
+                'location' => $data['location'] ?? null,
+                'salary' => $data['salary'] ?? null,
+            ]);
         } catch (Throwable $e) {
             Log::channel('ai')->warning('Job description draft failed', [
                 'user_id' => Auth::id(),

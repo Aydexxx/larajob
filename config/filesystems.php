@@ -17,6 +17,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Resume Disk
+    |--------------------------------------------------------------------------
+    |
+    | The disk user-uploaded resumes/CVs are stored on. These are private
+    | files served only through authorized, signed URLs — never public.
+    |
+    | Chosen by environment: set RESUME_DISK explicitly, otherwise it defaults
+    | to the S3-compatible "s3" disk when a bucket is configured (Cloudflare
+    | R2 / AWS S3 in production) and falls back to the private "local" disk for
+    | local development when no S3 credentials are present. Railway's local
+    | disk is ephemeral, so production MUST resolve to "s3".
+    |
+    */
+
+    'resume_disk' => env('RESUME_DISK', filled(env('AWS_BUCKET')) ? 's3' : 'local'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |

@@ -6,9 +6,9 @@ use App\Http\Requests\StoreJobRequest;
 use App\Http\Requests\UpdateJobRequest;
 use App\Models\Job;
 use App\Services\AI\JobDescriptionDraftService;
+use App\Support\UniqueSlug;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class JobController extends Controller
@@ -57,7 +57,7 @@ class JobController extends Controller
 
         $company->jobs()->create([
             ...$request->validated(),
-            'slug' => Str::slug($request->input('title')),
+            'slug' => UniqueSlug::generate(Job::class, $request->input('title')),
             'is_remote' => $request->boolean('is_remote'),
             'status' => 'active',
         ]);
@@ -79,7 +79,7 @@ class JobController extends Controller
 
         $job->update([
             ...$request->validated(),
-            'slug' => Str::slug($request->input('title')),
+            'slug' => UniqueSlug::generate(Job::class, $request->input('title'), $job->id),
             'is_remote' => $request->boolean('is_remote'),
         ]);
 

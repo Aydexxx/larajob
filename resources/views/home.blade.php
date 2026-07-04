@@ -7,7 +7,7 @@
         <div class="absolute inset-0 opacity-[0.18]" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 32px 32px;" aria-hidden="true"></div>
         <!-- glow blobs -->
         <div class="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-brand-400/30 blur-3xl motion-safe:animate-float-slow" aria-hidden="true"></div>
-        <div class="absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-violet-500/20 blur-3xl motion-safe:animate-float-slow [animation-delay:-4.5s]" aria-hidden="true"></div>
+        <div class="absolute -bottom-32 -left-20 h-72 w-72 rounded-full bg-accent-400/20 blur-3xl motion-safe:animate-float-slow [animation-delay:-4.5s]" aria-hidden="true"></div>
 
         <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-28 text-center">
             <span class="inline-flex items-center gap-2 rounded-full bg-white/10 ring-1 ring-white/20 px-3.5 py-1.5 text-sm font-medium text-brand-50 animate-fade-in-up">

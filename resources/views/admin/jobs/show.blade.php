@@ -80,7 +80,7 @@
                 </dl>
                 @if ($job->company)
                     <a href="{{ route('admin.companies.show', $job->company) }}"
-                        class="mt-4 inline-block text-sm text-indigo-600 hover:underline">
+                        class="mt-4 inline-block text-sm text-brand-600 hover:underline">
                         View company →
                     </a>
                 @endif

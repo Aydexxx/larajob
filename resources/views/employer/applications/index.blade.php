@@ -22,7 +22,7 @@
                 class="bg-white border border-gray-200 rounded-xl p-4 mb-6 flex flex-col sm:flex-row gap-3">
 
                 <select name="job_id"
-                    class="flex-1 border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    class="flex-1 border-gray-300 rounded-lg text-sm focus:ring-brand-500 focus:border-brand-500">
                     <option value="">All jobs</option>
                     @foreach ($jobs as $job)
                         <option value="{{ $job->id }}" {{ request('job_id') == $job->id ? 'selected' : '' }}>
@@ -32,7 +32,7 @@
                 </select>
 
                 <select name="status"
-                    class="flex-1 sm:max-w-[180px] border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    class="flex-1 sm:max-w-[180px] border-gray-300 rounded-lg text-sm focus:ring-brand-500 focus:border-brand-500">
                     <option value="">All statuses</option>
                     @foreach (['pending' => 'Pending', 'reviewed' => 'Reviewed', 'accepted' => 'Accepted', 'rejected' => 'Rejected'] as $value => $label)
                         <option value="{{ $value }}" {{ request('status') === $value ? 'selected' : '' }}>
@@ -42,7 +42,7 @@
                 </select>
 
                 <button type="submit"
-                    class="px-5 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 shrink-0">
+                    class="px-5 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 shrink-0">
                     Filter
                 </button>
 
@@ -73,11 +73,11 @@
                 <div class="flex items-center justify-end gap-2 mb-3 text-sm">
                     <span class="text-gray-500">Sort:</span>
                     <a href="{{ route('employer.applications.index', array_merge(request()->except(['sort', 'page']))) }}"
-                        class="px-3 py-1 rounded-full border {{ $sortByMatch ? 'border-gray-200 text-gray-500 hover:bg-gray-50' : 'border-indigo-300 bg-indigo-50 text-indigo-700 font-medium' }}">
+                        class="px-3 py-1 rounded-full border {{ $sortByMatch ? 'border-gray-200 text-gray-500 hover:bg-gray-50' : 'border-brand-300 bg-brand-50 text-brand-700 font-medium' }}">
                         Most recent
                     </a>
                     <a href="{{ route('employer.applications.index', array_merge(request()->except('page'), ['sort' => 'match'])) }}"
-                        class="px-3 py-1 rounded-full border {{ $sortByMatch ? 'border-indigo-300 bg-indigo-50 text-indigo-700 font-medium' : 'border-gray-200 text-gray-500 hover:bg-gray-50' }}">
+                        class="px-3 py-1 rounded-full border {{ $sortByMatch ? 'border-brand-300 bg-brand-50 text-brand-700 font-medium' : 'border-gray-200 text-gray-500 hover:bg-gray-50' }}">
                         Best match
                     </a>
                 </div>
@@ -128,14 +128,26 @@
 
                         <!-- Action -->
                         <a href="{{ route('employer.applications.show', $application) }}"
-                            class="shrink-0 text-xs px-3 py-1.5 border border-indigo-300 text-indigo-600 rounded-md font-medium hover:bg-indigo-50">
+                            class="shrink-0 text-xs px-3 py-1.5 border border-brand-300 text-brand-600 rounded-md font-medium hover:bg-brand-50">
                             View
                         </a>
                     </div>
                 @empty
-                    <div class="p-12 text-center text-gray-500 text-sm">
-                        No applications found.
-                    </div>
+                    @if (request()->hasAny(['job_id', 'status']))
+                        <x-ui.empty-state
+                            context="search"
+                            title="No applications match these filters"
+                            description="Try a different job or status, or clear the filters to see everything.">
+                            <x-slot name="action">
+                                <x-ui.button :href="route('employer.applications.index')" variant="outline">Clear filters</x-ui.button>
+                            </x-slot>
+                        </x-ui.empty-state>
+                    @else
+                        <x-ui.empty-state
+                            context="applications"
+                            title="No applications yet"
+                            description="Applications will show up here as soon as candidates start applying to your jobs." />
+                    @endif
                 @endforelse
             </div>
 

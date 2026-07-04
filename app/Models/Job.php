@@ -75,8 +75,8 @@ class Job extends Model
         }
 
         return $query->where(function (Builder $q) use ($term) {
-            $q->where('title', 'like', "%{$term}%")
-                ->orWhere('description', 'like', "%{$term}%");
+            $q->whereLike('title', "%{$term}%")
+                ->orWhereLike('description', "%{$term}%");
         });
     }
 

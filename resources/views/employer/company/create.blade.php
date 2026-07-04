@@ -24,7 +24,7 @@
                         <div>
                             <x-input-label for="description" :value="__('Description')" />
                             <textarea id="description" name="description" rows="4"
-                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('description') }}</textarea>
+                                class="mt-1 block w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-md shadow-sm">{{ old('description') }}</textarea>
                             <x-input-error :messages="$errors->get('description')" class="mt-2" />
                         </div>
 
@@ -48,7 +48,7 @@
                         <div>
                             <x-input-label for="logo" :value="__('Logo')" />
                             <input id="logo" name="logo" type="file" accept="image/*"
-                                class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" />
+                                class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100" />
                             <p class="mt-1 text-xs text-gray-500">{{ __('PNG, JPG, GIF up to 2MB') }}</p>
                             <x-input-error :messages="$errors->get('logo')" class="mt-2" />
                         </div>

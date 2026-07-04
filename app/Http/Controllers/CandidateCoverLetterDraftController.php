@@ -45,6 +45,19 @@ class CandidateCoverLetterDraftController extends Controller
             return response()->json(['status' => 'incomplete_profile', 'draft' => null]);
         }
 
+        // A draft already generated for this (profile version, job) pair is
+        // served straight from cache — no API call, and no cap check, since
+        // it costs nothing. Re-opening the same apply form is always free.
+        if (($cached = $drafts->cachedDraft($profile, $job)) !== null) {
+            return response()->json(['status' => 'ok', 'draft' => $cached]);
+        }
+
+        // Daily per-user cap. Cover letters have no rule-based fallback, so
+        // over the cap we degrade to "write it yourself" rather than spend.
+        if (! $drafts->withinDailyCap()) {
+            return response()->json(['status' => 'rate_limited', 'draft' => null]);
+        }
+
         try {
             $draft = $drafts->draft($profile, $job);
         } catch (Throwable $e) {

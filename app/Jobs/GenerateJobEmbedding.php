@@ -40,7 +40,7 @@ class GenerateJobEmbedding implements ShouldQueue
             return;
         }
 
-        $vector = $ai->embed($this->buildInput($job));
+        $vector = $ai->embed($this->buildInput($job), 'embedding');
 
         // saveQuietly: writing the embedding must not re-fire the
         // "updated" model event, or JobObserver would dispatch this same

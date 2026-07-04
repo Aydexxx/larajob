@@ -37,8 +37,8 @@
                             alt="{{ $application->job->company->name }}"
                             class="h-12 w-12 rounded-lg object-cover border border-gray-100 shrink-0" />
                     @else
-                        <div class="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
-                            <span class="font-bold text-indigo-600">
+                        <div class="h-12 w-12 rounded-lg bg-brand-100 flex items-center justify-center shrink-0">
+                            <span class="font-bold text-brand-600">
                                 {{ mb_strtoupper(mb_substr($application->job?->company?->name ?? '?', 0, 1)) }}
                             </span>
                         </div>
@@ -73,9 +73,9 @@
                 @if ($application->resume_path)
                     <div class="p-6">
                         <h4 class="text-sm font-semibold text-gray-700 mb-3">Resume</h4>
-                        <a href="{{ Storage::url($application->resume_path) }}"
+                        <a href="{{ route('candidate.applications.resume', $application) }}"
                             target="_blank"
-                            class="inline-flex items-center gap-2 text-sm text-indigo-600 hover:underline">
+                            class="inline-flex items-center gap-2 text-sm text-brand-600 hover:underline">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />

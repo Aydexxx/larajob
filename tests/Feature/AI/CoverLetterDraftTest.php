@@ -109,6 +109,51 @@ class CoverLetterDraftTest extends TestCase
             ->assertStatus(429);
     }
 
+    public function test_a_repeat_draft_for_the_same_pair_is_served_from_cache(): void
+    {
+        $fake = new FakeAIProvider(enabled: true, chatResponse: 'Dear team, I would love to join...');
+        $this->app->instance(AIProvider::class, $fake);
+        $candidate = $this->candidateWithProfile();
+        $job = $this->activeJob();
+
+        $this->actingAs($candidate)
+            ->postJson(route('candidate.applications.draft-cover-letter'), ['job_id' => $job->id])
+            ->assertJsonPath('draft', 'Dear team, I would love to join...');
+
+        $this->actingAs($candidate)
+            ->postJson(route('candidate.applications.draft-cover-letter'), ['job_id' => $job->id])
+            ->assertJsonPath('draft', 'Dear team, I would love to join...');
+
+        $this->assertSame(1, $fake->chatCalls, 'A warm (profile version, job) pair must not call the model again.');
+    }
+
+    public function test_re_embedding_the_profile_invalidates_the_cached_draft(): void
+    {
+        $this->app->instance(AIProvider::class, new FakeAIProvider(enabled: true, chatResponse: 'First draft.'));
+        $candidate = $this->candidateWithProfile();
+        $job = $this->activeJob();
+
+        $this->actingAs($candidate)
+            ->postJson(route('candidate.applications.draft-cover-letter'), ['job_id' => $job->id])
+            ->assertJsonPath('draft', 'First draft.');
+
+        // The draft cache is keyed by the profile's embedding version — the
+        // same signal the match layer uses. When the async pipeline finishes
+        // re-embedding an edited profile (new embedded_at), the cached draft
+        // is invalidated and the next request regenerates.
+        $this->travel(1)->minutes();
+        $candidate->candidateProfile->forceFill([
+            'embedding' => [0.5, 0.5],
+            'embedded_at' => now(),
+        ])->saveQuietly();
+
+        $this->app->instance(AIProvider::class, new FakeAIProvider(enabled: true, chatResponse: 'Second draft.'));
+
+        $this->actingAs($candidate->fresh())
+            ->postJson(route('candidate.applications.draft-cover-letter'), ['job_id' => $job->id])
+            ->assertJsonPath('draft', 'Second draft.');
+    }
+
     public function test_apply_page_shows_draft_with_ai_button_when_ai_enabled(): void
     {
         $this->enableAi();

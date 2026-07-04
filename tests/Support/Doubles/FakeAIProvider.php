@@ -12,6 +12,17 @@ class FakeAIProvider implements AIProvider
 
     public int $chatCalls = 0;
 
+    public ?string $lastPrompt = null;
+
+    public ?string $lastSystem = null;
+
+    /**
+     * Per-feature call tally, so tests can assert cost attribution.
+     *
+     * @var array<string, int>
+     */
+    public array $featureCalls = [];
+
     /**
      * @param  array<int, float>  $vector
      */
@@ -26,16 +37,20 @@ class FakeAIProvider implements AIProvider
         return $this->enabled;
     }
 
-    public function embed(string $text): array
+    public function embed(string $text, string $feature = 'embedding'): array
     {
         $this->embedCalls++;
+        $this->featureCalls[$feature] = ($this->featureCalls[$feature] ?? 0) + 1;
 
         return $this->vector;
     }
 
-    public function chat(string $prompt, ?string $system = null): string
+    public function chat(string $prompt, ?string $system = null, string $feature = 'chat'): string
     {
         $this->chatCalls++;
+        $this->lastPrompt = $prompt;
+        $this->lastSystem = $system;
+        $this->featureCalls[$feature] = ($this->featureCalls[$feature] ?? 0) + 1;
 
         return $this->chatResponse;
     }

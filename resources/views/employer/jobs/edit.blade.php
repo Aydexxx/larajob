@@ -25,16 +25,18 @@
                         <div>
                             <x-input-label for="description" :value="__('Description')" />
                             <textarea id="description" name="description" rows="6"
-                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
-                                required>{{ old('description', $job->description) }}</textarea>
+                                class="mt-1 block w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-md shadow-sm"
+                                required minlength="100">{{ old('description', $job->description) }}</textarea>
+                            <p class="mt-1 text-xs text-gray-500">{{ __('At least 100 characters — describe what the role actually involves.') }}</p>
                             <x-input-error :messages="$errors->get('description')" class="mt-2" />
                         </div>
 
                         <!-- Requirements -->
                         <div>
-                            <x-input-label for="requirements" :value="__('Requirements')" />
+                            <x-input-label for="requirements" :value="__('Requirements').' ('.__('optional').')'" />
                             <textarea id="requirements" name="requirements" rows="4"
-                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">{{ old('requirements', $job->requirements) }}</textarea>
+                                class="mt-1 block w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-md shadow-sm">{{ old('requirements', $job->requirements) }}</textarea>
+                            <p class="mt-1 text-xs text-gray-500">{{ __('Leave blank, or write at least 20 characters.') }}</p>
                             <x-input-error :messages="$errors->get('requirements')" class="mt-2" />
                         </div>
 
@@ -42,7 +44,7 @@
                         <div>
                             <x-input-label for="type" :value="__('Job Type')" />
                             <select id="type" name="type"
-                                class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm"
+                                class="mt-1 block w-full border-gray-300 focus:border-brand-500 focus:ring-brand-500 rounded-md shadow-sm"
                                 required>
                                 @foreach (['full-time' => 'Full Time', 'part-time' => 'Part Time', 'contract' => 'Contract', 'internship' => 'Internship'] as $value => $label)
                                     <option value="{{ $value }}"
@@ -57,7 +59,7 @@
                         <!-- Location + Remote -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <x-input-label for="location" :value="__('Location')" />
+                                <x-input-label for="location" :value="__('Location').' ('.__('required unless remote').')'" />
                                 <x-text-input id="location" name="location" type="text" class="mt-1 block w-full"
                                     :value="old('location', $job->location)" placeholder="City, Country" />
                                 <x-input-error :messages="$errors->get('location')" class="mt-2" />
@@ -66,7 +68,7 @@
                                 <label class="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" name="is_remote" value="1"
                                         {{ old('is_remote', $job->is_remote) ? 'checked' : '' }}
-                                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" />
+                                        class="rounded border-gray-300 text-brand-600 shadow-sm focus:ring-brand-500" />
                                     <span class="text-sm text-gray-700">{{ __('Remote position') }}</span>
                                 </label>
                             </div>

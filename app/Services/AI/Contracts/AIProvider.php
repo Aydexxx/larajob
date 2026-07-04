@@ -26,18 +26,24 @@ interface AIProvider
     /**
      * Generate an embedding vector for the given text.
      *
+     * @param  string  $feature  Cost-attribution label for this call (drives
+     *                           per-feature usage logging and the budget
+     *                           counter). See config('ai.limits').
      * @return array<int, float> The embedding vector.
      *
      * @throws AIDisabledException When the AI layer is disabled.
      */
-    public function embed(string $text): array;
+    public function embed(string $text, string $feature = 'embedding'): array;
 
     /**
      * Generate a chat/completion response for the given prompt.
      *
      * @param  string|null  $system  Optional system prompt for steering.
+     * @param  string  $feature  Cost-attribution label for this call (drives
+     *                           per-feature usage logging and the budget
+     *                           counter). See config('ai.limits').
      *
      * @throws AIDisabledException When the AI layer is disabled.
      */
-    public function chat(string $prompt, ?string $system = null): string;
+    public function chat(string $prompt, ?string $system = null, string $feature = 'chat'): string;
 }

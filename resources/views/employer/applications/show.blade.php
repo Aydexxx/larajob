@@ -67,7 +67,7 @@
                                 <p class="text-xs text-gray-500 mt-0.5">PDF document</p>
                             </div>
                             <a href="{{ route('employer.applications.resume', $application) }}"
-                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100">
+                                class="inline-flex items-center gap-1.5 px-4 py-2 bg-brand-50 text-brand-700 rounded-lg text-sm font-medium hover:bg-brand-100">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -130,7 +130,7 @@
 
                             @if ($profile?->linkedin_url)
                                 <a href="{{ $profile->linkedin_url }}" target="_blank" rel="noopener noreferrer"
-                                    class="inline-block text-xs text-indigo-600 hover:underline pt-1">
+                                    class="inline-block text-xs text-brand-600 hover:underline pt-1">
                                     LinkedIn Profile →
                                 </a>
                             @endif

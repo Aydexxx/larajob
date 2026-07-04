@@ -38,10 +38,17 @@
                 </div>
 
                 <div class="surface p-5 text-center">
-                    @if ($profile?->resume_path)
+                    @if ($profile?->isAnalyzingResume())
+                        <svg class="mx-auto h-7 w-7 text-brand-500 motion-safe:animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                            <circle class="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"></circle>
+                            <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V1C5.9 1 1 5.9 1 12h3z"></path>
+                        </svg>
+                        <p class="text-sm text-gray-500 mt-1">Analyzing resume…</p>
+                        <a href="{{ route('candidate.profile.edit') }}" class="text-xs font-semibold text-brand-600 hover:text-brand-700 mt-2 inline-block">View progress →</a>
+                    @elseif ($profile?->resume_path)
                         <p class="text-3xl font-extrabold text-green-600">✓</p>
                         <p class="text-sm text-gray-500 mt-1">Resume uploaded</p>
-                        <a href="{{ Storage::url($profile->resume_path) }}" target="_blank" class="text-xs font-semibold text-brand-600 hover:text-brand-700 mt-2 inline-block">View resume →</a>
+                        <a href="{{ route('candidate.profile.resume') }}" target="_blank" class="text-xs font-semibold text-brand-600 hover:text-brand-700 mt-2 inline-block">View resume →</a>
                     @else
                         <p class="text-3xl font-extrabold text-gray-300">–</p>
                         <p class="text-sm text-gray-500 mt-1">No resume yet</p>
@@ -81,6 +88,34 @@
                             </a>
                         @endforeach
                     </div>
+                </x-ui.card>
+            @endif
+
+            {{-- Secondary to the For You feed: a short, rule-based "learn these
+                 next" list. Hidden entirely when there's nothing meaningful to
+                 suggest — see SkillGapAdvisorService. --}}
+            @if (! empty($skillRecommendations))
+                <x-ui.card>
+                    <span class="eyebrow">Level up</span>
+                    <h3 class="font-bold text-gray-900 text-lg mt-2">Learn these to unlock more matches</h3>
+                    <p class="text-sm text-gray-500 mt-1">
+                        Skills that show up most in roles you're close to matching — closing one of these gaps could bring more jobs within reach.
+                    </p>
+
+                    <ul class="mt-5 space-y-2.5">
+                        @foreach ($skillRecommendations as $recommendation)
+                            <li class="flex items-center justify-between gap-3 rounded-xl bg-gray-50 px-4 py-3">
+                                <span class="font-semibold text-gray-900">{{ $recommendation['skill'] }}</span>
+                                <span class="shrink-0 text-xs font-semibold text-brand-700 bg-brand-50 rounded-full px-2.5 py-1">
+                                    +{{ $recommendation['jobCount'] }} {{ Str::plural('role', $recommendation['jobCount']) }}
+                                </span>
+                            </li>
+                        @endforeach
+                    </ul>
+
+                    <p class="mt-4 text-2xs text-gray-400">
+                        Estimated from skill overlap across roles you almost match — not a guarantee.
+                    </p>
                 </x-ui.card>
             @endif
 

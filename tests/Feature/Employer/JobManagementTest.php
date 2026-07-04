@@ -29,8 +29,8 @@ class JobManagementTest extends TestCase
     {
         return array_merge([
             'title' => 'Senior Software Engineer',
-            'description' => 'Build and maintain our core platform services.',
-            'requirements' => 'Five years of PHP experience.',
+            'description' => 'We are looking for a Senior Software Engineer to help design, build, and maintain the core services behind our platform. You will work closely with product and design to ship features end to end, and take ownership of reliability and performance for the systems you own.',
+            'requirements' => 'Five or more years of professional PHP experience, including Laravel. Comfortable working with relational databases and writing automated tests.',
             'type' => 'full-time',
             'location' => 'Remote',
             'is_remote' => true,
@@ -51,7 +51,94 @@ class JobManagementTest extends TestCase
             'company_id' => $company->id,
             'title' => 'Senior Software Engineer',
             'status' => 'active',
+            'slug' => 'senior-software-engineer',
         ]);
+    }
+
+    /**
+     * job_listings.slug is a unique column, but job titles are free text
+     * that different employers legitimately reuse. Posting a second job
+     * with a title that slugifies the same way must not 500 — it must get
+     * a de-duplicated slug instead.
+     */
+    public function test_two_employers_can_post_jobs_with_the_same_title(): void
+    {
+        [$firstEmployer] = $this->employerWithCompany();
+        [$secondEmployer] = $this->employerWithCompany();
+
+        $this->actingAs($firstEmployer)
+            ->post(route('employer.jobs.store'), $this->validJobPayload(['title' => 'Product Manager']))
+            ->assertRedirect(route('employer.jobs.index'));
+
+        $this->actingAs($secondEmployer)
+            ->post(route('employer.jobs.store'), $this->validJobPayload(['title' => 'Product Manager']))
+            ->assertRedirect(route('employer.jobs.index'));
+
+        $this->assertDatabaseHas('job_listings', ['title' => 'Product Manager', 'slug' => 'product-manager']);
+        $this->assertDatabaseHas('job_listings', ['title' => 'Product Manager', 'slug' => 'product-manager-2']);
+    }
+
+    public function test_saving_a_job_without_changing_its_title_keeps_the_same_slug(): void
+    {
+        [$employer, $company] = $this->employerWithCompany();
+        $job = Job::factory()->for($company)->create(['title' => 'Data Analyst', 'slug' => 'data-analyst']);
+
+        $this->actingAs($employer)
+            ->put(route('employer.jobs.update', $job), $this->validJobPayload(['title' => 'Data Analyst']))
+            ->assertRedirect(route('employer.jobs.index'));
+
+        $this->assertDatabaseHas('job_listings', ['id' => $job->id, 'slug' => 'data-analyst']);
+    }
+
+    public function test_a_job_description_shorter_than_the_minimum_is_rejected(): void
+    {
+        [$employer] = $this->employerWithCompany();
+
+        $this->actingAs($employer)
+            ->post(route('employer.jobs.store'), $this->validJobPayload(['description' => 'Too short.']))
+            ->assertSessionHasErrors('description');
+
+        $this->assertDatabaseMissing('job_listings', ['title' => 'Senior Software Engineer']);
+    }
+
+    public function test_job_requirements_are_optional_but_rejected_when_too_short(): void
+    {
+        [$employer] = $this->employerWithCompany();
+
+        $this->actingAs($employer)
+            ->post(route('employer.jobs.store'), $this->validJobPayload(['requirements' => 'PHP.']))
+            ->assertSessionHasErrors('requirements');
+
+        $this->actingAs($employer)
+            ->post(route('employer.jobs.store'), $this->validJobPayload(['requirements' => '']))
+            ->assertSessionDoesntHaveErrors('requirements');
+    }
+
+    public function test_location_is_required_for_a_non_remote_job(): void
+    {
+        [$employer] = $this->employerWithCompany();
+
+        $this->actingAs($employer)
+            ->post(route('employer.jobs.store'), $this->validJobPayload([
+                'is_remote' => false,
+                'location' => '',
+            ]))
+            ->assertSessionHasErrors('location');
+    }
+
+    public function test_location_is_not_required_for_a_remote_job(): void
+    {
+        [$employer] = $this->employerWithCompany();
+
+        // A real checked HTML checkbox submits the string "1" (never a
+        // native PHP bool), which is what required_unless:is_remote,1
+        // actually matches against.
+        $this->actingAs($employer)
+            ->post(route('employer.jobs.store'), $this->validJobPayload([
+                'is_remote' => '1',
+                'location' => '',
+            ]))
+            ->assertSessionDoesntHaveErrors('location');
     }
 
     public function test_an_employer_can_edit_their_own_job(): void

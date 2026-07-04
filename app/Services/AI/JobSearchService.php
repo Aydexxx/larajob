@@ -87,7 +87,7 @@ class JobSearchService
         return Cache::remember(
             $cacheKey,
             now()->addMinutes(self::QUERY_EMBEDDING_TTL_MINUTES),
-            fn () => $this->ai->embed($term)
+            fn () => $this->ai->embed($term, 'embedding')
         );
     }
 }

@@ -18,8 +18,8 @@
                         <img src="{{ Storage::url($company->logo) }}" alt="{{ $company->name }}"
                             class="h-16 w-16 rounded-xl object-cover border border-gray-100 shrink-0" />
                     @else
-                        <div class="h-16 w-16 rounded-xl bg-indigo-100 flex items-center justify-center shrink-0">
-                            <span class="text-2xl font-bold text-indigo-600">{{ mb_strtoupper(mb_substr($company->name, 0, 1)) }}</span>
+                        <div class="h-16 w-16 rounded-xl bg-brand-100 flex items-center justify-center shrink-0">
+                            <span class="text-2xl font-bold text-brand-600">{{ mb_strtoupper(mb_substr($company->name, 0, 1)) }}</span>
                         </div>
                     @endif
                     <div class="flex-1">
@@ -36,7 +36,7 @@
                         @endif
                         @if ($company->website)
                             <a href="{{ $company->website }}" target="_blank" rel="noopener noreferrer"
-                                class="text-sm text-indigo-600 hover:underline">{{ $company->website }}</a>
+                                class="text-sm text-brand-600 hover:underline">{{ $company->website }}</a>
                         @endif
                     </div>
                 </div>
